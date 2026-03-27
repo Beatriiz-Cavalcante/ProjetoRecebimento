@@ -77,6 +77,14 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+#### 🔹🔹 4.1 📦 Gerenciamento de dependências
+
+Para atualizar as dependências do projeto:
+
+```bash
+pip freeze > requirements.txt
+```
+
 ---
 
 ### 🔹 5. Configurar o banco de dados
@@ -145,15 +153,6 @@ python app.py
 | PUT    | /usuarios | Atualizar usuário |
 | DELETE | /usuarios | Deletar usuário   |
 
----
-
-## 📦 Gerenciamento de dependências
-
-Para atualizar as dependências do projeto:
-
-```bash
-pip freeze > requirements.txt
-```
 
 ---
 
