@@ -1,1 +1,2 @@
-pip install -r requirements.txt
+Flask==2.3.3
+psycopg2-binary==2.9.9
