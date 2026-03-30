@@ -55,7 +55,11 @@ def listar_operacoes():
     colunas = [desc[0] for desc in cursor.description]
     resultado = []
     for linha in dados:
-        resultado.append(dict(zip(colunas, linha))) #zip junta nome da coluna ao valor, dict cria o dicionario e append adiciona esse dicionario ao resultado
+        linha_dict = dict(zip(colunas, linha)) #zip junta nome da coluna ao valor, dict cria o dicionario e append adiciona esse dicionario ao resultado
+        for chave, valor in linha_dict.items():
+            if hasattr(valor, 'isoformat'): #verificando o tipo TIME
+                linha_dict[chave]= valor.isoformat() #aplicando conversão para string
+        resultado.append(linha_dict)
     return jsonify(resultado)    
 
 if __name__ == '__main__':
