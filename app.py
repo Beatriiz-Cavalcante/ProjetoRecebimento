@@ -62,5 +62,49 @@ def listar_operacoes():
         resultado.append(linha_dict)
     return jsonify(resultado)    
 
+#terceiro end point (PUT - editar dados)
+@app.route('/operacoes/<int:id>', methods=['PUT'])
+def atualizar_operacao(id):
+    data = request.json
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE operacoes_logistica SET
+            fornecedor = %s,
+            chegada_na_rua = %s,
+            entrada_no_cd = %s,
+            data = %s,
+            horario_inicio = %s,
+            horario_final = %s,
+            desconto_hora = %s,
+            numero_palet = %s,
+            tipo_carga = %s,
+            num_homens = %s,
+            avaria = %s,
+            volumes = %s,
+            descricao = %s
+        WHERE id = %s
+    """, (
+        data['fornecedor'],
+        data['chegada_na_rua'],
+        data['entrada_no_cd'],
+        data['data'],
+        data['horario_inicio'],
+        data['horario_final'],
+        data['desconto_hora'],
+        data['numero_palet'],
+        data['tipo_carga'],
+        data['num_homens'],
+        data['avaria'],
+        data['volumes'],
+        data['descricao'],
+        id
+    ))
+
+    conn.commit()
+
+    return jsonify({"mensagem": "Operação atualizada com sucesso"})
+
 if __name__ == '__main__':
     app.run(debug=True)
