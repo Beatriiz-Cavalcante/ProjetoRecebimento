@@ -13,10 +13,6 @@ conn = psycopg2.connect(
 def home():
     return "API rodando 🚀"
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
 #primeiro end point (POST - criar)
 @app.route('/operacoes', methods=['POST'])
 def criar_operacao():
@@ -45,3 +41,22 @@ def criar_operacao():
 
     conn.commit()
     return jsonify({"Mensagem":"Operação criada com sucesso"})
+
+#segundo end point (GET - puxar/ler dados)
+@app.route('/operacoes', methods=['GET'])
+def listar_operacoes():
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT * FROM operacoes_logistica
+        WHERE ativo = TRUE
+        ORDER BY id DESC
+    """)
+    dados = cursor.fetchall() #fetchall é usado para pegar todos os resultados da consulta
+    colunas = [desc[0] for desc in cursor.description]
+    resultado = []
+    for linha in dados:
+        resultado.append(dict(zip(colunas, linha))) #zip junta nome da coluna ao valor, dict cria o dicionario e append adiciona esse dicionario ao resultado
+    return jsonify(resultado)    
+
+if __name__ == '__main__':
+    app.run(debug=True)
