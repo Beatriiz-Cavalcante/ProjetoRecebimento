@@ -106,5 +106,20 @@ def atualizar_operacao(id):
 
     return jsonify({"mensagem": "Operação atualizada com sucesso"})
 
+#quarto end point (delete - apagar)
+@app.route('/operacoes/<int:id>', methods=['DELETE'])
+def deletar_operacao(id):
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE operacoes_logistica
+        SET ativo = FALSE
+        WHERE id = %s
+    """, (id,))
+
+    conn.commit()
+
+    return jsonify({"mensagem": "Operação removida com sucesso"})
+
 if __name__ == '__main__':
     app.run(debug=True)
