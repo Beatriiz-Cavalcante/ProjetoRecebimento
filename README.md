@@ -1,15 +1,22 @@
 # 📦 Projeto Recebimento
 
-API REST desenvolvida em Python utilizando Flask e PostgreSQL para gerenciamento de dados.
+API REST desenvolvida em Python utilizando Flask e PostgreSQL para gerenciamento de dados, com interface web em React.
 
 ---
 
 ## 🚀 Tecnologias utilizadas
 
+### Backend
 * Python 3.x
 * Flask
+* Flask-CORS
 * PostgreSQL
 * psycopg2-binary
+
+### Frontend
+* React (Vite)
+* JavaScript
+* Bootstrap
 
 ---
 
@@ -18,8 +25,14 @@ API REST desenvolvida em Python utilizando Flask e PostgreSQL para gerenciamento
 ```
 ProjetoRecebimento/
 │
-├── app.py
-├── requirements.txt
+├── backend/
+│ ├── app.py
+│ ├── requirements.txt
+│
+├── frontend_react_recebimento/
+│ ├── package.json
+│ ├── src/
+│
 ├── .gitignore
 └── README.md
 ```
@@ -31,6 +44,7 @@ ProjetoRecebimento/
 Antes de começar, você precisa ter instalado:
 
 * Python 3
+* Node.js
 * Git
 * PostgreSQL
 
@@ -46,8 +60,9 @@ cd ProjetoRecebimento
 ```
 
 ---
+### 2. Backend
 
-### 🔹 2. Criar o ambiente virtual
+### 🔹 2.1 Criar o ambiente virtual
 
 ```bash
 python -m venv venv
@@ -55,7 +70,7 @@ python -m venv venv
 
 ---
 
-### 🔹 3. Ativar o ambiente virtual
+### 🔹 2.2 Ativar o ambiente virtual
 
 **Windows (Git Bash):**
 
@@ -71,19 +86,43 @@ venv\Scripts\activate
 
 ---
 
-### 🔹 4. Instalar as dependências
+### 🔹 2.3 Instalar as dependências
 
 ```bash
 pip install -r requirements.txt
 ```
 
-#### 🔹🔹 4.1 📦 Gerenciamento de dependências
+#### 🔹🔹 OBS 📦 Gerenciamento de dependências
 
 Para atualizar as dependências do projeto:
 
 ```bash
 pip freeze > requirements.txt
 ```
+
+---
+
+### 3. FRONTEND
+
+###🔹 3.1 Acessar pasta do frontend
+
+```bash
+cd frontend_react_recebimento
+```
+
+###🔹 3.2. Instalar dependências
+
+```bash
+npm install
+```
+
+###🔹 3.3 Rodar aplicação React
+
+```bash
+npm run dev
+```
+
+👉 Frontend ficará disponível em: http://localhost:5173
 
 ---
 
