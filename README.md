@@ -126,7 +126,7 @@ npm run dev
 
 ---
 
-### 🔹 5. Configurar o banco de dados
+### 🔹 4. Configurar o banco de dados
 
 1. Abra o PostgreSQL
 2. Crie um banco de dados
@@ -174,7 +174,7 @@ password="sua_senha"
 
 ---
 
-### 🔹 6. Rodar a aplicação
+### 🔹 5. Rodar a aplicação
 
 ```bash
 python app.py
