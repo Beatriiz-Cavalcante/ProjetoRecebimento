@@ -68,9 +68,7 @@ cd ProjetoRecebimento
 python -m venv venv
 ```
 
----
-
-### 🔹 2.2 Ativar o ambiente virtual
+#### 🔹 2.2 Ativar o ambiente virtual
 
 **Windows (Git Bash):**
 
@@ -84,9 +82,7 @@ source venv/Scripts/activate
 venv\Scripts\activate
 ```
 
----
-
-### 🔹 2.3 Instalar as dependências
+#### 🔹 2.3 Instalar as dependências
 
 ```bash
 pip install -r requirements.txt
