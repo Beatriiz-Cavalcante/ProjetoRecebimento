@@ -11,6 +11,59 @@ conn = psycopg2.connect(
     password="recife@1020"
 )
 
+def valor_preenchido(valor):
+    return valor is not None and str(valor).strip() != ""
+
+def calcular_status(data):
+    campos_obrigatorios = [
+        data.get("fornecedor"),
+        data.get("chegada_na_rua"),
+        data.get("entrada_no_cd"),
+        data.get("data"),
+        data.get("horario_inicio"),
+        data.get("horario_final"),
+        data.get("desconto_hora"),
+        data.get("numero_palet"),
+        data.get("tipo_carga"),
+        data.get("num_homens"),
+    ]
+
+    faltando = any(not valor_preenchido(valor) for valor in campos_obrigatorios)
+    return "PENDENTE" if faltando else "RESOLVIDO"
+
+def gerar_observacao_automatica(data):
+    faltando = []
+
+    if not valor_preenchido(data.get("fornecedor")):
+        faltando.append("Fornecedor")
+    if not valor_preenchido(data.get("chegada_na_rua")):
+        faltando.append("Chegada na Rua")
+    if not valor_preenchido(data.get("entrada_no_cd")):
+        faltando.append("Entrada no CD")
+    if not valor_preenchido(data.get("data")):
+        faltando.append("Data")
+    if not valor_preenchido(data.get("horario_inicio")):
+        faltando.append("Horário Início")
+    if not valor_preenchido(data.get("horario_final")):
+        faltando.append("Horário Final")
+    if not valor_preenchido(data.get("desconto_hora")):
+        faltando.append("Desconto Hora")
+    if not valor_preenchido(data.get("numero_palet")) and data.get("numero_palet") != 0:
+        faltando.append("Número Palet")
+    if not valor_preenchido(data.get("tipo_carga")):
+        faltando.append("Tipo Carga")
+    if not valor_preenchido(data.get("num_homens")) and data.get("num_homens") != 0:
+        faltando.append("Nº Homens")
+    if faltando:
+        return "Faltando preencher: " + ", ".join(faltando)
+    return "Registro preenchido corretamente."
+
+def normalizar_saida(registro):
+    for chave, valor in registro.items():
+        if hasattr(valor, "isoformat"):
+            registro[chave] = valor.isoformat()
+    return registro
+
 @app.route('/')
 def home():
     return "API rodando 🚀"
