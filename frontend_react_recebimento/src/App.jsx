@@ -76,10 +76,102 @@ function App() {
     item.toLowerCase().includes(fornecedor.toLowerCase())
   );
 
+  function valorPreenchido(valor) {
+    return valor !== null && valor !== undefined && String(valor).trim() !== "";
+  }
+
+  function calcularStatusRegistro(item) {
+    const camposObrigatorios = [
+      item.fornecedor,
+      item.chegada_na_rua,
+      item.entrada_no_cd,
+      item.data,
+      item.horario_inicio,
+      item.horario_final,
+      item.desconto_hora,
+      item.numero_palet,
+      item.tipo_carga,
+      item.num_homens,
+    ];
+
+    const faltando = camposObrigatorios.some((valor) => !valorPreenchido(valor));
+
+    return faltando ? "PENDENTE" : "RESOLVIDO";
+  }
+
+  function gerarObservacaoAutomatica(item) {
+    const faltando = [];
+
+    if (!valorPreenchido(item.fornecedor)) faltando.push("Fornecedor");
+    if (!valorPreenchido(item.chegada_na_rua)) faltando.push("Chegada na Rua");
+    if (!valorPreenchido(item.entrada_no_cd)) faltando.push("Entrada no CD");
+    if (!valorPreenchido(item.data)) faltando.push("Data");
+    if (!valorPreenchido(item.horario_inicio)) faltando.push("Horário Início");
+    if (!valorPreenchido(item.horario_final)) faltando.push("Horário Final");
+    if (!valorPreenchido(item.desconto_hora)) faltando.push("Desconto Hora");
+    if (!valorPreenchido(item.numero_palet) && item.numero_palet !== 0) {
+      faltando.push("Número Palet");
+    }
+    if (!valorPreenchido(item.tipo_carga)) faltando.push("Tipo Carga");
+    if (!valorPreenchido(item.num_homens) && item.num_homens !== 0) {
+      faltando.push("Nº Homens");
+    }
+
+    if (faltando.length > 0) {
+      return `Faltando preencher: ${faltando.join(", ")}`;
+    }
+
+    return "Registro preenchido corretamente.";
+  }
+
+  function enriquecerLista(dados) {
+    return (Array.isArray(dados) ? dados : []).map((item) => {
+      const statusCalculado = calcularStatusRegistro(item);
+
+      return {
+        ...item,
+        status_manual: item.status_manual || statusCalculado,
+        observacao_status:
+          item.observacao_status && String(item.observacao_status).trim() !== ""
+            ? item.observacao_status
+            : gerarObservacaoAutomatica(item),
+      };
+    });
+  }
+
+  function getStatusStyle(status) {
+    if (status === "RESOLVIDO") {
+      return {
+        backgroundColor: "#d4edda",
+        color: "#155724",
+        border: "1px solid #c3e6cb",
+      };
+    }
+
+    return {
+      backgroundColor: "#fff3cd",
+      color: "#856404",
+      border: "1px solid #ffeeba",
+    };
+  }
+
+  function formatarDataBR(valor) {
+    if (!valor) return "-";
+
+    if (typeof valor === "string" && valor.includes("-")) {
+      const partes = valor.split("-");
+      if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
+    }
+
+    return valor;
+  }
+
   async function carregar() {
     try {
       const dados = await getRecebimentos();
-      setLista(Array.isArray(dados) ? dados : []);
+      setLista(enriquecerLista(dados));
     } catch (error) {
       console.error("Erro ao carregar recebimentos:", error);
       setLista([]);
@@ -173,7 +265,7 @@ function App() {
 
       limparFormulario();
       setErros({});
-      carregar();
+      await carregar();
       inputFornecedorRef.current?.focus();
     } catch (error) {
       console.error("Erro ao salvar recebimento:", error);
@@ -256,6 +348,22 @@ function App() {
         selecionarFornecedor(fornecedoresFiltrados[indiceAtivo]);
       }
     }
+  }
+
+  function handleChangeObservacao(id, valor) {
+    setLista((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, observacao_status: valor } : item
+      )
+    );
+  }
+
+  function handleChangeStatus(id, novoStatus) {
+    setLista((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, status_manual: novoStatus } : item
+      )
+    );
   }
 
   return (
@@ -528,16 +636,157 @@ function App() {
         </button>
       </form>
 
-      <h2>Registros</h2>
+      <h2 className="mb-3">Registros</h2>
 
-      <ul className="list-group">
-        {lista.map((item, index) => (
-          <li key={index} className="list-group-item">
-            <strong>{item.fornecedor}</strong> | Data: {item.data} | Chegada na rua:{" "}
-            {item.chegada_na_rua}
-          </li>
-        ))}
-      </ul>
+      {lista.length === 0 ? (
+        <div className="alert alert-light border">Nenhum registro encontrado.</div>
+      ) : (
+        <div className="d-flex flex-column gap-3">
+          {lista.map((item) => {
+            const statusExibido = item.status_manual || calcularStatusRegistro(item);
+
+            return (
+              <div
+                key={item.id}
+                className="card shadow-sm"
+                style={{ borderRadius: "12px" }}
+              >
+                <div className="card-body">
+                  <div className="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                    <div>
+                      <h5 className="card-title mb-1">
+                        #{item.id} - {item.fornecedor || "Sem fornecedor"}
+                      </h5>
+                      <div className="text-muted" style={{ fontSize: "14px" }}>
+                        Data: {formatarDataBR(item.data)}
+                      </div>
+                    </div>
+
+                    <span
+                      style={{
+                        ...getStatusStyle(statusExibido),
+                        padding: "6px 12px",
+                        borderRadius: "20px",
+                        fontWeight: "700",
+                        fontSize: "12px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {statusExibido}
+                    </span>
+                  </div>
+
+                  <div className="row g-2 mb-3">
+                    <div className="col-md-4">
+                      <div className="border rounded p-2 h-100">
+                        <strong>Chegada na Rua:</strong>
+                        <div>{item.chegada_na_rua || "-"}</div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="border rounded p-2 h-100">
+                        <strong>Entrada no CD:</strong>
+                        <div>{item.entrada_no_cd || "-"}</div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="border rounded p-2 h-100">
+                        <strong>Horário Início:</strong>
+                        <div>{item.horario_inicio || "-"}</div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="border rounded p-2 h-100">
+                        <strong>Horário Final:</strong>
+                        <div>{item.horario_final || "-"}</div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="border rounded p-2 h-100">
+                        <strong>Desconto Hora:</strong>
+                        <div>{item.desconto_hora || "-"}</div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="border rounded p-2 h-100">
+                        <strong>Número Palet:</strong>
+                        <div>{item.numero_palet ?? "-"}</div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="border rounded p-2 h-100">
+                        <strong>Tipo Carga:</strong>
+                        <div>{item.tipo_carga || "-"}</div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="border rounded p-2 h-100">
+                        <strong>Nº Homens:</strong>
+                        <div>{item.num_homens ?? "-"}</div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="border rounded p-2 h-100">
+                        <strong>Avaria:</strong>
+                        <div>{item.avaria ?? 0}</div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-4">
+                      <div className="border rounded p-2 h-100">
+                        <strong>Volumes:</strong>
+                        <div>{item.volumes ?? 0}</div>
+                      </div>
+                    </div>
+
+                    <div className="col-md-8">
+                      <div className="border rounded p-2 h-100">
+                        <strong>Descrição:</strong>
+                        <div>{item.descricao || "-"}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">Editar status</label>
+                    <select
+                      className="form-select"
+                      style={{ maxWidth: "220px" }}
+                      value={statusExibido}
+                      onChange={(e) => handleChangeStatus(item.id, e.target.value)}
+                    >
+                      <option value="PENDENTE">PENDENTE</option>
+                      <option value="RESOLVIDO">RESOLVIDO</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="form-label fw-semibold">
+                      Campo editável / observação
+                    </label>
+                    <textarea
+                      className="form-control"
+                      rows="3"
+                      value={item.observacao_status || ""}
+                      onChange={(e) =>
+                        handleChangeObservacao(item.id, e.target.value)
+                      }
+                      placeholder="Digite uma observação para este registro"
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
