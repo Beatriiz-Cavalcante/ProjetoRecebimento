@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import psycopg2
+from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
 CORS(app)
@@ -71,31 +72,67 @@ def home():
 #primeiro end point (POST - criar)
 @app.route('/operacoes', methods=['POST'])
 def criar_operacao():
-    data = request.json #(request pega os dados em python e transforma em json para mandar para o banco)
-    
-    cursor = conn.cursor() #usado para criar comandos no banco de dados
+    try:
+        data = request.json or {}
 
-    cursor.execute("""
-        INSERT INTO operacoes_logistica(fornecedor, chegada_na_rua, entrada_no_cd, data, horario_inicio, horario_final, desconto_hora, numero_palet,
-                   tipo_carga, num_homens, avaria, volumes, descricao) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """, (
-        data['fornecedor'],
-        data['chegada_na_rua'],
-        data['entrada_no_cd'],
-        data['data'],
-        data['horario_inicio'],
-        data['horario_final'],
-        data['desconto_hora'],
-        data['numero_palet'],
-        data['tipo_carga'],
-        data['num_homens'],
-        data['avaria'],
-        data['volumes'],
-        data['descricao']
-    ) )
+        status_calculado = calcular_status(data)
+        observacao_final = data.get("observacao_status")
 
-    conn.commit()
-    return jsonify({"Mensagem":"Operação criada com sucesso"})
+        if not valor_preenchido(observacao_final):
+            observacao_final = gerar_observacao_automatica(data)
+
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("""
+            INSERT INTO operacoes_logistica (
+                fornecedor,
+                chegada_na_rua,
+                entrada_no_cd,
+                data,
+                horario_inicio,
+                horario_final,
+                desconto_hora,
+                numero_palet,
+                tipo_carga,
+                num_homens,
+                avaria,
+                volumes,
+                descricao,
+                status,
+                observacao_status
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            RETURNING *
+        """, (
+            data.get("fornecedor"),
+            data.get("chegada_na_rua"),
+            data.get("entrada_no_cd"),
+            data.get("data"),
+            data.get("horario_inicio"),
+            data.get("horario_final"),
+            data.get("desconto_hora"),
+            data.get("numero_palet"),
+            data.get("tipo_carga"),
+            data.get("num_homens"),
+            data.get("avaria", 0),
+            data.get("volumes", 0),
+            data.get("descricao", ""),
+            status_calculado,
+            observacao_final
+        ))
+
+        nova_operacao = cursor.fetchone()
+        conn.commit()
+        cursor.close()
+
+        return jsonify({
+            "mensagem": "Operação criada com sucesso",
+            "dados": normalizar_saida(dict(nova_operacao))
+        }), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"erro": f"Erro ao criar operação: {str(e)}"}), 500
 
 #segundo end point (GET - puxar/ler dados)
 @app.route('/operacoes', methods=['GET'])
