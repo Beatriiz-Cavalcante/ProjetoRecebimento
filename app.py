@@ -137,22 +137,40 @@ def criar_operacao():
 #segundo end point (GET - puxar/ler dados)
 @app.route('/operacoes', methods=['GET'])
 def listar_operacoes():
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT * FROM operacoes_logistica
-        WHERE ativo = TRUE
-        ORDER BY id DESC
-    """)
-    dados = cursor.fetchall() #fetchall é usado para pegar todos os resultados da consulta
-    colunas = [desc[0] for desc in cursor.description]
-    resultado = []
-    for linha in dados:
-        linha_dict = dict(zip(colunas, linha)) #zip junta nome da coluna ao valor, dict cria o dicionario e append adiciona esse dicionario ao resultado
-        for chave, valor in linha_dict.items():
-            if hasattr(valor, 'isoformat'): #verificando o tipo TIME
-                linha_dict[chave]= valor.isoformat() #aplicando conversão para string
-        resultado.append(linha_dict)
-    return jsonify(resultado)    
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT
+                id,
+                fornecedor,
+                chegada_na_rua,
+                entrada_no_cd,
+                data,
+                horario_inicio,
+                horario_final,
+                desconto_hora,
+                numero_palet,
+                tipo_carga,
+                num_homens,
+                avaria,
+                volumes,
+                descricao,
+                ativo,
+                criado_em,
+                status,
+                observacao_status
+            FROM operacoes_logistica
+            WHERE ativo = TRUE
+            ORDER BY id DESC
+        """)
+        dados = cursor.fetchall()
+        cursor.close()
+
+        resultado = [normalizar_saida(dict(linha)) for linha in dados]
+        return jsonify(resultado)
+
+    except Exception as e:
+        return jsonify({"erro": f"Erro ao listar operações: {str(e)}"}), 500
 
 #terceiro end point (PUT - editar dados)
 @app.route('/operacoes/<int:id>', methods=['PUT'])
