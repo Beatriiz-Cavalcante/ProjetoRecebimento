@@ -173,48 +173,79 @@ def listar_operacoes():
         return jsonify({"erro": f"Erro ao listar operações: {str(e)}"}), 500
 
 #terceiro end point (PUT - editar dados)
-@app.route('/operacoes/<int:id>', methods=['PUT'])
+@app.route("/operacoes/<int:id>", methods=["PUT"])
 def atualizar_operacao(id):
-    data = request.json
+    try:
+        data = request.json or {}
 
-    cursor = conn.cursor()
+        status_recebido = data.get("status")
+        if status_recebido in ["PENDENTE", "RESOLVIDO"]:
+            status_final = status_recebido
+        else:
+            status_final = calcular_status(data)
 
-    cursor.execute("""
-        UPDATE operacoes_logistica SET
-            fornecedor = %s,
-            chegada_na_rua = %s,
-            entrada_no_cd = %s,
-            data = %s,
-            horario_inicio = %s,
-            horario_final = %s,
-            desconto_hora = %s,
-            numero_palet = %s,
-            tipo_carga = %s,
-            num_homens = %s,
-            avaria = %s,
-            volumes = %s,
-            descricao = %s
-        WHERE id = %s
-    """, (
-        data['fornecedor'],
-        data['chegada_na_rua'],
-        data['entrada_no_cd'],
-        data['data'],
-        data['horario_inicio'],
-        data['horario_final'],
-        data['desconto_hora'],
-        data['numero_palet'],
-        data['tipo_carga'],
-        data['num_homens'],
-        data['avaria'],
-        data['volumes'],
-        data['descricao'],
-        id
-    ))
+        observacao_final = data.get("observacao_status")
+        if not valor_preenchido(observacao_final):
+            observacao_final = gerar_observacao_automatica(data)
 
-    conn.commit()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    return jsonify({"mensagem": "Operação atualizada com sucesso"})
+        cursor.execute("""
+            UPDATE operacoes_logistica SET
+                fornecedor = %s,
+                chegada_na_rua = %s,
+                entrada_no_cd = %s,
+                data = %s,
+                horario_inicio = %s,
+                horario_final = %s,
+                desconto_hora = %s,
+                numero_palet = %s,
+                tipo_carga = %s,
+                num_homens = %s,
+                avaria = %s,
+                volumes = %s,
+                descricao = %s,
+                status = %s,
+                observacao_status = %s
+            WHERE id = %s
+            RETURNING *
+        """, (
+            data.get("fornecedor"),
+            data.get("chegada_na_rua"),
+            data.get("entrada_no_cd"),
+            data.get("data"),
+            data.get("horario_inicio"),
+            data.get("horario_final"),
+            data.get("desconto_hora"),
+            data.get("numero_palet"),
+            data.get("tipo_carga"),
+            data.get("num_homens"),
+            data.get("avaria", 0),
+            data.get("volumes", 0),
+            data.get("descricao", ""),
+            status_final,
+            observacao_final,
+            id
+        ))
+
+        operacao_atualizada = cursor.fetchone()
+
+        if not operacao_atualizada:
+            cursor.close()
+            conn.rollback()
+            return jsonify({"erro": "Operação não encontrada"}), 404
+
+        conn.commit()
+        cursor.close()
+
+        return jsonify({
+            "mensagem": "Operação atualizada com sucesso",
+            "dados": normalizar_saida(dict(operacao_atualizada))
+        })
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"erro": f"Erro ao atualizar operação: {str(e)}"}), 500
 
 #quarto end point (delete - apagar)
 @app.route('/operacoes/<int:id>', methods=['DELETE'])
