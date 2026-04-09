@@ -292,17 +292,31 @@ def atualizar_status_operacao(id):
 #quarto end point (delete - apagar)
 @app.route('/operacoes/<int:id>', methods=['DELETE'])
 def deletar_operacao(id):
-    cursor = conn.cursor()
+    try:
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    cursor.execute("""
-        UPDATE operacoes_logistica
-        SET ativo = FALSE
-        WHERE id = %s
-    """, (id,))
+        cursor.execute("""
+            UPDATE operacoes_logistica
+            SET ativo = FALSE
+            WHERE id = %s
+            RETURNING id
+        """, (id,))
 
-    conn.commit()
+        operacao = cursor.fetchone()
 
-    return jsonify({"mensagem": "Operação removida com sucesso"})
+        if not operacao:
+            cursor.close()
+            conn.rollback()
+            return jsonify({"erro": "Operação não encontrada"}), 404
+
+        conn.commit()
+        cursor.close()
+
+        return jsonify({"mensagem": "Operação removida com sucesso"})
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"erro": f"Erro ao remover operação: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
