@@ -246,6 +246,48 @@ def atualizar_operacao(id):
     except Exception as e:
         conn.rollback()
         return jsonify({"erro": f"Erro ao atualizar operação: {str(e)}"}), 500
+    
+# Método PUT - atualizar somente status e observação
+@app.route("/operacoes/<int:id>/status", methods=["PUT"])
+def atualizar_status_operacao(id):
+    try:
+        data = request.json or {}
+
+        status = data.get("status")
+        observacao_status = data.get("observacao_status", "")
+
+        if status not in ["PENDENTE", "RESOLVIDO"]:
+            return jsonify({"erro": "Status inválido. Use PENDENTE ou RESOLVIDO."}), 400
+
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("""
+            UPDATE operacoes_logistica
+            SET
+                status = %s,
+                observacao_status = %s
+            WHERE id = %s
+            RETURNING *
+        """, (status, observacao_status, id))
+
+        operacao_atualizada = cursor.fetchone()
+
+        if not operacao_atualizada:
+            cursor.close()
+            conn.rollback()
+            return jsonify({"erro": "Operação não encontrada"}), 404
+
+        conn.commit()
+        cursor.close()
+
+        return jsonify({
+            "mensagem": "Status e observação atualizados com sucesso",
+            "dados": normalizar_saida(dict(operacao_atualizada))
+        })
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"erro": f"Erro ao atualizar status: {str(e)}"}), 500
 
 #quarto end point (delete - apagar)
 @app.route('/operacoes/<int:id>', methods=['DELETE'])
