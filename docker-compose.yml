@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: logistica_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: logistica_teste
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: recife@1020
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:

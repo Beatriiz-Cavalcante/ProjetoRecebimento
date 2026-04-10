@@ -9,7 +9,8 @@ conn = psycopg2.connect(
     host="localhost",
     database="logistica_teste",
     user="postgres",
-    password="recife@1020"
+    password="recife@1020",
+    port=5433
 )
 
 def valor_preenchido(valor):
