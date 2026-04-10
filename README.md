@@ -18,6 +18,8 @@ API REST desenvolvida em Python utilizando Flask e PostgreSQL para gerenciamento
 * JavaScript
 * Bootstrap
 
+## Banco de Dados
+- PostgreSQL (rodando via Docker) 🐳  
 ---
 
 ## 📁 Estrutura do projeto
@@ -33,6 +35,10 @@ ProjetoRecebimento/
 │ ├── package.json
 │ ├── src/
 │
+├── database/
+│ └── init.sql
+│
+├── docker-compose.yml
 ├── .gitignore
 └── README.md
 ```
@@ -46,7 +52,7 @@ Antes de começar, você precisa ter instalado:
 * Python 3
 * Node.js
 * Git
-* PostgreSQL
+* Docker Desktop 
 
 ---
 
@@ -58,34 +64,50 @@ Antes de começar, você precisa ter instalado:
 git clone https://github.com/Beatriiz-Cavalcante/ProjetoRecebimento.git
 cd ProjetoRecebimento
 ```
+---
+### 2. Banco de dados (Docker)
+
+Subir o PostgreSQL na raiz do projeto:
+
+```bash
+docker compose up -d
+```
+
+Acessar o banco (opcional)
+```bash
+docker exec -it logistica_postgres psql -U postgres -d logistica_teste
+```
 
 ---
-### 2. Backend
+### 3. Backend
 
-### 🔹 2.1 Criar o ambiente virtual
+### 🔹 3.1 Criar o ambiente virtual
 
 ```bash
 python -m venv venv
 ```
 
-#### 🔹 2.2 Ativar o ambiente virtual
-
-**Windows (Git Bash):**
+#### 🔹 3.2 Ativar o ambiente virtual
 
 ```bash
 source venv/Scripts/activate
 ```
-
-**Windows (CMD):**
+#### 🔹 3.3 Acessar a pasta do backend
 
 ```bash
-venv\Scripts\activate
+cd backend
 ```
 
-#### 🔹 2.3 Instalar as dependências
+#### 🔹 3.4 Instalar as dependências na pasta do backend
 
 ```bash
 pip install -r requirements.txt
+```
+
+#### 🔹 3.5 Rodar a API
+
+```bash
+python app.py
 ```
 
 #### 🔹🔹 OBS 📦 Gerenciamento de dependências
@@ -97,7 +119,6 @@ pip freeze > requirements.txt
 ```
 
 ---
-
 ### 3. FRONTEND
 
 ###🔹 3.1 Acessar pasta do frontend
@@ -122,81 +143,16 @@ npm run dev
 
 ---
 
-### 🔹 4. Configurar o banco de dados
-
-1. Abra o PostgreSQL
-2. Crie um banco de dados
-3. Atualize as credenciais no `app.py`:
-
-```
--- Table: public.operacoes_logistica
-
--- DROP TABLE IF EXISTS public.operacoes_logistica;
-
-CREATE TABLE IF NOT EXISTS public.operacoes_logistica
-(
-    id integer NOT NULL DEFAULT nextval('operacoes_logistica_id_seq'::regclass),
-    fornecedor character varying(100) COLLATE pg_catalog."default" NOT NULL,
-    chegada_na_rua time without time zone NOT NULL,
-    entrada_no_cd time without time zone NOT NULL,
-    data date NOT NULL,
-    horario_inicio time without time zone NOT NULL,
-    horario_final time without time zone NOT NULL,
-    desconto_hora time without time zone NOT NULL,
-    numero_palet integer NOT NULL,
-    tipo_carga character varying(20) COLLATE pg_catalog."default" NOT NULL,
-    num_homens integer NOT NULL,
-    avaria integer DEFAULT 0,
-    volumes integer DEFAULT 0,
-    descricao text COLLATE pg_catalog."default",
-    ativo boolean DEFAULT true,
-    criado_em timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT operacoes_logistica_pkey PRIMARY KEY (id)
-)
-
-TABLESPACE pg_default;
-
-ALTER TABLE IF EXISTS public.operacoes_logistica
-    OWNER to postgres;
-```
-
-
-```python
-host="localhost",
-database="seu_banco",
-user="seu_usuario",
-password="sua_senha"
-```
-
----
-
-### 🔹 5. Rodar a aplicação
-
-```bash
-python app.py
-```
-
----
-
 ## 📌 Rotas da API (exemplo)
 
-| Método | Rota      | Descrição         |
-| ------ | --------- | ----------------- |
-| GET    | /         | Teste da API      |
-| GET    | /usuarios | Listar usuários   |
-| POST   | /usuarios | Criar usuário     |
-| PUT    | /usuarios | Atualizar usuário |
-| DELETE | /usuarios | Deletar usuário   |
+| Método | Rota                   | Descrição          |
+| ------ | ---------              | -------------------|
+| GET    | /                      | Teste da API       |
+| GET    | /operacoes             | Listar operações   |
+| POST   | /operacoes             | Criar operação     |
+| PUT    | /operacoes/{id}        | Atualizar operação |
+| PUT    | /operacoes/{id}/status | Atualizar status   |
+| DELETE | /operacoes/{id}        | Remover (inativar) |
 
 
 ---
-
-## 💡 Melhorias futuras
-
-* Separar rotas em arquivos (`routes/`)
-* Criar camada de conexão com banco (`database/`)
-* Usar variáveis de ambiente (`.env`)
-* Implementar autenticação
-
----
-
