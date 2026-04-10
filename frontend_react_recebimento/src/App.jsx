@@ -32,6 +32,10 @@ function App() {
   const [registroEditando, setRegistroEditando] = useState(null);
   const [salvandoEdicao, setSalvandoEdicao] = useState(false);
 
+  const [salvandoStatusId, setSalvandoStatusId] = useState(null);
+  const [salvandoObservacaoId, setSalvandoObservacaoId] = useState(null);
+  const [observacoesDraft, setObservacoesDraft] = useState({});
+
   const containerRef = useRef(null);
   const inputFornecedorRef = useRef(null);
   const inputChegadaRef = useRef(null);
@@ -175,10 +179,55 @@ function App() {
     return valor;
   }
 
+  function montarPayloadRegistro(item, sobrescrever = {}) {
+    return {
+      fornecedor: item.fornecedor || "",
+      chegada_na_rua: item.chegada_na_rua || "",
+      entrada_no_cd: item.entrada_no_cd || "",
+      data: item.data || "",
+      horario_inicio: item.horario_inicio || "",
+      horario_final: item.horario_final || "",
+      desconto_hora: item.desconto_hora || "",
+      numero_palet:
+        item.numero_palet === "" ||
+        item.numero_palet === null ||
+        item.numero_palet === undefined
+          ? null
+          : Number(item.numero_palet),
+      tipo_carga: item.tipo_carga || "PAL",
+      num_homens:
+        item.num_homens === "" ||
+        item.num_homens === null ||
+        item.num_homens === undefined
+          ? null
+          : Number(item.num_homens),
+      avaria:
+        item.avaria === "" || item.avaria === null || item.avaria === undefined
+          ? 0
+          : Number(item.avaria),
+      volumes:
+        item.volumes === "" || item.volumes === null || item.volumes === undefined
+          ? 0
+          : Number(item.volumes),
+      descricao: item.descricao || "",
+      status_manual: item.status_manual || calcularStatusRegistro(item),
+      observacao_status: item.observacao_status || "",
+      ...sobrescrever,
+    };
+  }
+
   async function carregar() {
     try {
       const dados = await getRecebimentos();
-      setLista(enriquecerLista(dados));
+      const listaEnriquecida = enriquecerLista(dados);
+
+      setLista(listaEnriquecida);
+
+      const drafts = {};
+      listaEnriquecida.forEach((item) => {
+        drafts[item.id] = item.observacao_status || "";
+      });
+      setObservacoesDraft(drafts);
     } catch (error) {
       console.error("Erro ao carregar recebimentos:", error);
       setLista([]);
@@ -311,7 +360,6 @@ function App() {
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-
       if (total === 0) return;
 
       setAbrirLista(true);
@@ -324,7 +372,6 @@ function App() {
 
     if (e.key === "ArrowUp") {
       e.preventDefault();
-
       if (total === 0) return;
 
       setAbrirLista(true);
@@ -358,6 +405,11 @@ function App() {
   }
 
   function handleChangeObservacao(id, valor) {
+    setObservacoesDraft((prev) => ({
+      ...prev,
+      [id]: valor,
+    }));
+
     setLista((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, observacao_status: valor } : item
@@ -365,12 +417,69 @@ function App() {
     );
   }
 
-  function handleChangeStatus(id, novoStatus) {
+  async function salvarObservacao(id) {
+    const itemAtual = lista.find((item) => item.id === id);
+    if (!itemAtual) return;
+
+    const novaObservacao = observacoesDraft[id] ?? "";
+
+    setSalvandoObservacaoId(id);
+
+    try {
+      const payload = montarPayloadRegistro(itemAtual, {
+        observacao_status: novaObservacao,
+      });
+
+      await atualizarRecebimento(id, payload);
+
+      setLista((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, observacao_status: novaObservacao } : item
+        )
+      );
+    } catch (error) {
+      console.error("Erro ao salvar observação:", error);
+      alert("Erro ao salvar observação.");
+    } finally {
+      setSalvandoObservacaoId(null);
+    }
+  }
+
+  async function handleChangeStatus(id, novoStatus) {
+    const itemAtual = lista.find((item) => item.id === id);
+    if (!itemAtual) return;
+
+    const statusAnterior = itemAtual.status_manual || calcularStatusRegistro(itemAtual);
+
     setLista((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, status_manual: novoStatus } : item
       )
     );
+
+    setSalvandoStatusId(id);
+
+    try {
+      const payload = montarPayloadRegistro(itemAtual, {
+        status_manual: novoStatus,
+        observacao_status:
+          observacoesDraft[id] ?? itemAtual.observacao_status ?? "",
+      });
+
+      await atualizarRecebimento(id, payload);
+    } catch (error) {
+      console.error("Erro ao salvar status:", error);
+
+      setLista((prev) =>
+        prev.map((item) =>
+          item.id === id ? { ...item, status_manual: statusAnterior } : item
+        )
+      );
+
+      alert("Erro ao salvar status.");
+    } finally {
+      setSalvandoStatusId(null);
+    }
   }
 
   function iniciarEdicao(item) {
@@ -1064,15 +1173,24 @@ function App() {
                         <option value="RESOLVIDO">RESOLVIDO</option>
                       </select>
                     ) : (
-                      <select
-                        className="form-select"
-                        style={{ maxWidth: "220px" }}
-                        value={statusExibido}
-                        onChange={(e) => handleChangeStatus(item.id, e.target.value)}
-                      >
-                        <option value="PENDENTE">PENDENTE</option>
-                        <option value="RESOLVIDO">RESOLVIDO</option>
-                      </select>
+                      <>
+                        <select
+                          className="form-select"
+                          style={{ maxWidth: "220px" }}
+                          value={statusExibido}
+                          onChange={(e) => handleChangeStatus(item.id, e.target.value)}
+                          disabled={salvandoStatusId === item.id}
+                        >
+                          <option value="PENDENTE">PENDENTE</option>
+                          <option value="RESOLVIDO">RESOLVIDO</option>
+                        </select>
+
+                        {salvandoStatusId === item.id && (
+                          <div className="text-muted mt-1" style={{ fontSize: "12px" }}>
+                            Salvando status...
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
 
@@ -1092,15 +1210,37 @@ function App() {
                         placeholder="Digite uma observação para este registro"
                       />
                     ) : (
-                      <textarea
-                        className="form-control"
-                        rows="3"
-                        value={item.observacao_status || ""}
-                        onChange={(e) =>
-                          handleChangeObservacao(item.id, e.target.value)
-                        }
-                        placeholder="Digite uma observação para este registro"
-                      />
+                      <div className="d-flex flex-column gap-2">
+                        <textarea
+                          className="form-control"
+                          rows="3"
+                          value={observacoesDraft[item.id] ?? ""}
+                          onChange={(e) =>
+                            handleChangeObservacao(item.id, e.target.value)
+                          }
+                          placeholder="Digite uma observação para este registro"
+                          disabled={salvandoObservacaoId === item.id}
+                        />
+
+                        <div className="d-flex align-items-center gap-2">
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary btn-sm"
+                            onClick={() => salvarObservacao(item.id)}
+                            disabled={salvandoObservacaoId === item.id}
+                          >
+                            {salvandoObservacaoId === item.id
+                              ? "Salvando..."
+                              : "Salvar observação"}
+                          </button>
+
+                          {salvandoObservacaoId === item.id && (
+                            <span className="text-muted" style={{ fontSize: "12px" }}>
+                              Salvando observação...
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
