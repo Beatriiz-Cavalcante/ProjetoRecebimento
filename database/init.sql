@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS public.operacoes_logistica
     criado_em timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     status character varying(20) COLLATE pg_catalog."default" DEFAULT 'PENDENTE',
     observacao_status text COLLATE pg_catalog."default",
+    observacao_manual text COLLATE pg_catalog."default",
     CONSTRAINT operacoes_logistica_status_check CHECK (status IN ('PENDENTE', 'RESOLVIDO'))
 );
 
