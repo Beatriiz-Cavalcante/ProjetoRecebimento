@@ -90,7 +90,7 @@ python -m venv venv
 #### 🔹 3.2 Ativar o ambiente virtual
 
 ```bash
-source venv/Scripts/activate
+.\venv\Scripts\activate.ps1
 ```
 #### 🔹 3.3 Acessar a pasta do backend
 
