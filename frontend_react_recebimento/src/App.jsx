@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { getRecebimentos, criarRecebimento } from "./services/api";
 import "./Appcss.css";
+import CadastroRecebimento from "./components/CadastroRecebimento/CadastroRecebimento";
+import Registros from "./components/Registros/Registros";
 
 function App() {
   const [lista, setLista] = useState([]);
@@ -368,425 +370,58 @@ function App() {
 
   return (
     <div className="container mt-4">
-      <h1>Cadastro de Recebimento</h1>
+      <CadastroRecebimento
+        handleSubmit={handleSubmit}
+        erros={erros}
+        fornecedor={fornecedor}
+        setFornecedor={setFornecedor}
+        abrirLista={abrirLista}
+        setAbrirLista={setAbrirLista}
+        selecionado={selecionado}
+        indiceAtivo={indiceAtivo}
+        setIndiceAtivo={setIndiceAtivo}
+        fornecedoresFiltrados={fornecedoresFiltrados}
+        selecionarFornecedor={selecionarFornecedor}
+        handleKeyDownFornecedor={handleKeyDownFornecedor}
+        containerRef={containerRef}
+        inputFornecedorRef={inputFornecedorRef}
+        inputChegadaRef={inputChegadaRef}
+        chegadaNaRua={chegadaNaRua}
+        setChegadaNaRua={setChegadaNaRua}
+        entradaNoCd={entradaNoCd}
+        setEntradaNoCd={setEntradaNoCd}
+        data={data}
+        setData={setData}
+        horarioInicio={horarioInicio}
+        setHorarioInicio={setHorarioInicio}
+        horarioFinal={horarioFinal}
+        setHorarioFinal={setHorarioFinal}
+        descontoHora={descontoHora}
+        setDescontoHora={setDescontoHora}
+        numeroPalet={numeroPalet}
+        setNumeroPalet={setNumeroPalet}
+        tipoCarga={tipoCarga}
+        setTipoCarga={setTipoCarga}
+        numHomens={numHomens}
+        setNumHomens={setNumHomens}
+        avaria={avaria}
+        setAvaria={setAvaria}
+        volumes={volumes}
+        setVolumes={setVolumes}
+        descricao={descricao}
+        setDescricao={setDescricao}
+        setErros={setErros}
+        listaRef={listaRef}
+      />
 
-      <form onSubmit={handleSubmit} className="mb-4" noValidate>
-        <div className="row">
-          <div className="col-md-6 mb-3 position-relative" ref={containerRef}>
-            <label className="form-label">
-              Fornecedor <span className="campo-obrigatorio">*</span>
-            </label>
-            <input
-              ref={inputFornecedorRef}
-              className={`form-control ${erros.fornecedor ? "is-invalid" : ""}`}
-              placeholder="Fornecedor"
-              value={fornecedor}
-              onChange={(e) => {
-                setFornecedor(e.target.value);
-                setAbrirLista(true);
-                setIndiceAtivo(-1);
-                setErros((prev) => ({ ...prev, fornecedor: false }));
-              }}
-              onFocus={() => setAbrirLista(true)}
-              onKeyDown={handleKeyDownFornecedor}
-              autoComplete="off"
-            />
-            {erros.fornecedor && (
-              <div className="mensagem-erro">campo obrigatório</div>
-            )}
-
-            {abrirLista && fornecedoresFiltrados.length > 0 && (
-              <ul className="lista-fornecedores" ref={listaRef}>
-                {fornecedoresFiltrados.map((item, index) => (
-                  <li
-                    key={index}
-                    className={`item-fornecedor ${
-                      selecionado === item ? "selecionado" : ""
-                    } ${indiceAtivo === index ? "ativo" : ""}`}
-                    onMouseEnter={() => setIndiceAtivo(index)}
-                    onClick={() => selecionarFornecedor(item)}
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Chegada na Rua <span className="campo-obrigatorio">*</span>
-            </label>
-            <input
-              ref={inputChegadaRef}
-              className={`form-control ${erros.chegadaNaRua ? "is-invalid" : ""}`}
-              type="time"
-              value={chegadaNaRua}
-              onChange={(e) => {
-                setChegadaNaRua(e.target.value);
-                setErros((prev) => ({ ...prev, chegadaNaRua: false }));
-              }}
-            />
-            {erros.chegadaNaRua && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
-          </div>
-
-          <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Entrada no CD <span className="campo-obrigatorio">*</span>
-            </label>
-            <input
-              className={`form-control ${erros.entradaNoCd ? "is-invalid" : ""}`}
-              type="time"
-              value={entradaNoCd}
-              onChange={(e) => {
-                setEntradaNoCd(e.target.value);
-                setErros((prev) => ({ ...prev, entradaNoCd: false }));
-              }}
-            />
-            {erros.entradaNoCd && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
-          </div>
-
-          <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Data <span className="campo-obrigatorio">*</span>
-            </label>
-            <input
-              className={`form-control ${erros.data ? "is-invalid" : ""}`}
-              type="date"
-              value={data}
-              onChange={(e) => {
-                setData(e.target.value);
-                setErros((prev) => ({ ...prev, data: false }));
-              }}
-            />
-            {erros.data && <div className="mensagem-erro">Campo Obrigatório</div>}
-          </div>
-
-          <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Horário Início <span className="campo-obrigatorio">*</span>
-            </label>
-            <input
-              className={`form-control ${erros.horarioInicio ? "is-invalid" : ""}`}
-              type="time"
-              value={horarioInicio}
-              onChange={(e) => {
-                setHorarioInicio(e.target.value);
-                setErros((prev) => ({ ...prev, horarioInicio: false }));
-              }}
-            />
-            {erros.horarioInicio && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
-          </div>
-
-          <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Horário Final <span className="campo-obrigatorio">*</span>
-            </label>
-            <input
-              className={`form-control ${erros.horarioFinal ? "is-invalid" : ""}`}
-              type="time"
-              value={horarioFinal}
-              onChange={(e) => {
-                setHorarioFinal(e.target.value);
-                setErros((prev) => ({ ...prev, horarioFinal: false }));
-              }}
-            />
-            {erros.horarioFinal && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
-          </div>
-
-          <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Desconto Hora <span className="campo-obrigatorio">*</span>
-            </label>
-            <input
-              className={`form-control ${erros.descontoHora ? "is-invalid" : ""}`}
-              type="time"
-              value={descontoHora}
-              onChange={(e) => {
-                setDescontoHora(e.target.value);
-                setErros((prev) => ({ ...prev, descontoHora: false }));
-              }}
-            />
-            {erros.descontoHora && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
-          </div>
-
-          <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Número Palet <span className="campo-obrigatorio">*</span>
-            </label>
-            <input
-              className={`form-control ${erros.numeroPalet ? "is-invalid" : ""}`}
-              type="number"
-              min="0"
-              value={numeroPalet}
-              onChange={(e) => {
-                setNumeroPalet(e.target.value);
-                setErros((prev) => ({ ...prev, numeroPalet: false }));
-              }}
-            />
-            {erros.numeroPalet && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
-          </div>
-
-          <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Tipo Carga <span className="campo-obrigatorio">*</span>
-            </label>
-            <div
-              className={`d-flex gap-2 tipo-carga-box ${
-                erros.tipoCarga ? "tipo-carga-erro" : ""
-              }`}
-            >
-              <button
-                type="button"
-                className={`btn ${
-                  tipoCarga === "PAL" ? "btn-primary" : "btn-outline-primary"
-                }`}
-                onClick={() => {
-                  setTipoCarga("PAL");
-                  setErros((prev) => ({ ...prev, tipoCarga: false }));
-                }}
-              >
-                PAL
-              </button>
-
-              <button
-                type="button"
-                className={`btn ${
-                  tipoCarga === "BAT" ? "btn-primary" : "btn-outline-primary"
-                }`}
-                onClick={() => {
-                  setTipoCarga("BAT");
-                  setErros((prev) => ({ ...prev, tipoCarga: false }));
-                }}
-              >
-                BAT
-              </button>
-            </div>
-            {erros.tipoCarga && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
-          </div>
-
-          <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Nº Homens <span className="campo-obrigatorio">*</span>
-            </label>
-            <input
-              className={`form-control ${erros.numHomens ? "is-invalid" : ""}`}
-              type="number"
-              min="0"
-              value={numHomens}
-              onChange={(e) => {
-                setNumHomens(e.target.value);
-                setErros((prev) => ({ ...prev, numHomens: false }));
-              }}
-            />
-            {erros.numHomens && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
-          </div>
-
-          <div className="col-md-3 mb-3">
-            <label className="form-label">Avaria</label>
-            <input
-              className="form-control"
-              type="number"
-              min="0"
-              value={avaria}
-              onChange={(e) => setAvaria(e.target.value)}
-            />
-          </div>
-
-          <div className="col-md-3 mb-3">
-            <label className="form-label">Volumes</label>
-            <input
-              className="form-control"
-              type="number"
-              min="0"
-              value={volumes}
-              onChange={(e) => setVolumes(e.target.value)}
-            />
-          </div>
-
-          <div className="col-12 mb-3">
-            <label className="form-label">Descrição</label>
-            <textarea
-              className="form-control"
-              rows="3"
-              value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <button className="btn btn-primary" type="submit">
-          Enviar
-        </button>
-      </form>
-
-      <h2 className="mb-3">Registros</h2>
-
-      {lista.length === 0 ? (
-        <div className="alert alert-light border">Nenhum registro encontrado.</div>
-      ) : (
-        <div className="d-flex flex-column gap-3">
-          {lista.map((item) => {
-            const statusExibido = item.status_manual || calcularStatusRegistro(item);
-
-            return (
-              <div
-                key={item.id}
-                className="card shadow-sm"
-                style={{ borderRadius: "12px" }}
-              >
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-                    <div>
-                      <h5 className="card-title mb-1">
-                        #{item.id} - {item.fornecedor || "Sem fornecedor"}
-                      </h5>
-                      <div className="text-muted" style={{ fontSize: "14px" }}>
-                        Data: {formatarDataBR(item.data)}
-                      </div>
-                    </div>
-
-                    <span
-                      style={{
-                        ...getStatusStyle(statusExibido),
-                        padding: "6px 12px",
-                        borderRadius: "20px",
-                        fontWeight: "700",
-                        fontSize: "12px",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {statusExibido}
-                    </span>
-                  </div>
-
-                  <div className="row g-2 mb-3">
-                    <div className="col-md-4">
-                      <div className="border rounded p-2 h-100">
-                        <strong>Chegada na Rua:</strong>
-                        <div>{item.chegada_na_rua || "-"}</div>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="border rounded p-2 h-100">
-                        <strong>Entrada no CD:</strong>
-                        <div>{item.entrada_no_cd || "-"}</div>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="border rounded p-2 h-100">
-                        <strong>Horário Início:</strong>
-                        <div>{item.horario_inicio || "-"}</div>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="border rounded p-2 h-100">
-                        <strong>Horário Final:</strong>
-                        <div>{item.horario_final || "-"}</div>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="border rounded p-2 h-100">
-                        <strong>Desconto Hora:</strong>
-                        <div>{item.desconto_hora || "-"}</div>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="border rounded p-2 h-100">
-                        <strong>Número Palet:</strong>
-                        <div>{item.numero_palet ?? "-"}</div>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="border rounded p-2 h-100">
-                        <strong>Tipo Carga:</strong>
-                        <div>{item.tipo_carga || "-"}</div>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="border rounded p-2 h-100">
-                        <strong>Nº Homens:</strong>
-                        <div>{item.num_homens ?? "-"}</div>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="border rounded p-2 h-100">
-                        <strong>Avaria:</strong>
-                        <div>{item.avaria ?? 0}</div>
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="border rounded p-2 h-100">
-                        <strong>Volumes:</strong>
-                        <div>{item.volumes ?? 0}</div>
-                      </div>
-                    </div>
-
-                    <div className="col-md-8">
-                      <div className="border rounded p-2 h-100">
-                        <strong>Descrição:</strong>
-                        <div>{item.descricao || "-"}</div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label fw-semibold">Editar status</label>
-                    <select
-                      className="form-select"
-                      style={{ maxWidth: "220px" }}
-                      value={statusExibido}
-                      onChange={(e) => handleChangeStatus(item.id, e.target.value)}
-                    >
-                      <option value="PENDENTE">PENDENTE</option>
-                      <option value="RESOLVIDO">RESOLVIDO</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="form-label fw-semibold">
-                      Campo editável / observação
-                    </label>
-                    <textarea
-                      className="form-control"
-                      rows="3"
-                      value={item.observacao_status || ""}
-                      onChange={(e) =>
-                        handleChangeObservacao(item.id, e.target.value)
-                      }
-                      placeholder="Digite uma observação para este registro"
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <Registros
+        lista={lista}
+        calcularStatusRegistro={calcularStatusRegistro}
+        formatarDataBR={formatarDataBR}
+        getStatusStyle={getStatusStyle}
+        handleChangeStatus={handleChangeStatus}
+        handleChangeObservacao={handleChangeObservacao}
+      />
     </div>
   );
 }

@@ -1,0 +1,19 @@
+.registro-card {
+  border-radius: 12px;
+}
+
+.registro-data {
+  font-size: 14px;
+}
+
+.registro-status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.registro-status-select {
+  max-width: 220px;
+}
