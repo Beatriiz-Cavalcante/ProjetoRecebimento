@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { getRecebimentos, criarRecebimento } from "./services/api";
+import { getRecebimentos, criarRecebimento, atualizarRecebimento } from "./services/api";
 import "./Appcss.css";
 import CadastroRecebimento from "./components/CadastroRecebimento/CadastroRecebimento";
 import Registros from "./components/Registros/Registros";
@@ -25,6 +25,7 @@ function App() {
   const [selecionado, setSelecionado] = useState("");
   const [indiceAtivo, setIndiceAtivo] = useState(-1);
   const [erros, setErros] = useState({});
+  const [editandoId, setEditandoId] = useState(null);
 
   const containerRef = useRef(null);
   const inputFornecedorRef = useRef(null);
@@ -97,7 +98,6 @@ function App() {
     ];
 
     const faltando = camposObrigatorios.some((valor) => !valorPreenchido(valor));
-
     return faltando ? "PENDENTE" : "RESOLVIDO";
   }
 
@@ -127,18 +127,13 @@ function App() {
   }
 
   function enriquecerLista(dados) {
-    return (Array.isArray(dados) ? dados : []).map((item) => {
-      const statusCalculado = calcularStatusRegistro(item);
-
-      return {
-        ...item,
-        status_manual: item.status_manual || statusCalculado,
-        observacao_status:
-          item.observacao_status && String(item.observacao_status).trim() !== ""
-            ? item.observacao_status
-            : gerarObservacaoAutomatica(item),
-      };
-    });
+    return (Array.isArray(dados) ? dados : []).map((item) => ({
+      ...item,
+      observacao_status:
+        item.observacao_status && String(item.observacao_status).trim() !== ""
+          ? item.observacao_status
+          : gerarObservacaoAutomatica(item),
+    }));
   }
 
   function getStatusStyle(status) {
@@ -232,15 +227,7 @@ function App() {
     const novosErros = {};
 
     if (!fornecedor) novosErros.fornecedor = true;
-    if (!chegadaNaRua) novosErros.chegadaNaRua = true;
-    if (!entradaNoCd) novosErros.entradaNoCd = true;
     if (!data) novosErros.data = true;
-    if (!horarioInicio) novosErros.horarioInicio = true;
-    if (!horarioFinal) novosErros.horarioFinal = true;
-    if (!descontoHora) novosErros.descontoHora = true;
-    if (numeroPalet === "") novosErros.numeroPalet = true;
-    if (!tipoCarga) novosErros.tipoCarga = true;
-    if (numHomens === "") novosErros.numHomens = true;
 
     setErros(novosErros);
 
@@ -251,15 +238,15 @@ function App() {
     try {
       await criarRecebimento({
         fornecedor,
-        chegada_na_rua: chegadaNaRua,
-        entrada_no_cd: entradaNoCd,
+        chegada_na_rua: chegadaNaRua || null,
+        entrada_no_cd: entradaNoCd || null,
         data,
-        horario_inicio: horarioInicio,
-        horario_final: horarioFinal,
-        desconto_hora: descontoHora,
-        numero_palet: Number(numeroPalet),
-        tipo_carga: tipoCarga,
-        num_homens: Number(numHomens),
+        horario_inicio: horarioInicio || null,
+        horario_final: horarioFinal || null,
+        desconto_hora: descontoHora || null,
+        numero_palet: numeroPalet === "" ? null : Number(numeroPalet),
+        tipo_carga: tipoCarga || null,
+        num_homens: numHomens === "" ? null : Number(numHomens),
         avaria: avaria === "" ? 0 : Number(avaria),
         volumes: volumes === "" ? 0 : Number(volumes),
         descricao,
@@ -360,12 +347,76 @@ function App() {
     );
   }
 
-  function handleChangeStatus(id, novoStatus) {
+  function iniciarEdicao(id) {
+    setEditandoId(id);
+  }
+
+  function cancelarEdicao() {
+    setEditandoId(null);
+    carregar();
+  }
+
+  function handleChangeCampoRegistro(id, campo, valor) {
     setLista((prev) =>
       prev.map((item) =>
-        item.id === id ? { ...item, status_manual: novoStatus } : item
+        item.id === id
+          ? {
+              ...item,
+              [campo]: valor,
+            }
+          : item
       )
     );
+  }
+
+  async function salvarEdicaoRegistro(item) {
+    try {
+      const payload = {
+        fornecedor: item.fornecedor || null,
+        chegada_na_rua: item.chegada_na_rua || null,
+        entrada_no_cd: item.entrada_no_cd || null,
+        data: item.data || null,
+        horario_inicio: item.horario_inicio || null,
+        horario_final: item.horario_final || null,
+        desconto_hora: item.desconto_hora || null,
+        numero_palet:
+          item.numero_palet === "" || item.numero_palet === null
+            ? null
+            : Number(item.numero_palet),
+        tipo_carga: item.tipo_carga || null,
+        num_homens:
+          item.num_homens === "" || item.num_homens === null
+            ? null
+            : Number(item.num_homens),
+        avaria:
+          item.avaria === "" || item.avaria === null ? 0 : Number(item.avaria),
+        volumes:
+          item.volumes === "" || item.volumes === null ? 0 : Number(item.volumes),
+        descricao: item.descricao || "",
+        observacao_status: item.observacao_status || "",
+      };
+
+      const atualizado = await atualizarRecebimento(item.id, payload);
+
+      setLista((prev) =>
+        prev.map((registro) =>
+          registro.id === item.id
+            ? {
+                ...atualizado,
+                observacao_status:
+                  atualizado.observacao_status && String(atualizado.observacao_status).trim() !== ""
+                    ? atualizado.observacao_status
+                    : gerarObservacaoAutomatica(atualizado),
+              }
+            : registro
+        )
+      );
+
+      setEditandoId(null);
+    } catch (error) {
+      console.error("Erro ao salvar edição:", error);
+      alert("Erro ao salvar edição do registro.");
+    }
   }
 
   return (
@@ -417,10 +468,14 @@ function App() {
       <Registros
         lista={lista}
         calcularStatusRegistro={calcularStatusRegistro}
-        formatarDataBR={formatarDataBR}
         getStatusStyle={getStatusStyle}
-        handleChangeStatus={handleChangeStatus}
+        formatarDataBR={formatarDataBR}
         handleChangeObservacao={handleChangeObservacao}
+        editandoId={editandoId}
+        iniciarEdicao={iniciarEdicao}
+        cancelarEdicao={cancelarEdicao}
+        handleChangeCampoRegistro={handleChangeCampoRegistro}
+        salvarEdicaoRegistro={salvarEdicaoRegistro}
       />
     </div>
   );

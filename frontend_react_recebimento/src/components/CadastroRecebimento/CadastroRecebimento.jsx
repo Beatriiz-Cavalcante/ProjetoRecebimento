@@ -91,40 +91,28 @@ function CadastroRecebimento({
           </div>
 
           <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Chegada na Rua <span className="campo-obrigatorio">*</span>
-            </label>
+            <label className="form-label">Chegada na Rua</label>
             <input
               ref={inputChegadaRef}
-              className={`form-control ${erros.chegadaNaRua ? "is-invalid" : ""}`}
+              className="form-control"
               type="time"
               value={chegadaNaRua}
               onChange={(e) => {
                 setChegadaNaRua(e.target.value);
-                setErros((prev) => ({ ...prev, chegadaNaRua: false }));
               }}
-            />
-            {erros.chegadaNaRua && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
+            />   
           </div>
 
           <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Entrada no CD <span className="campo-obrigatorio">*</span>
-            </label>
+            <label className="form-label">Entrada no CD </label>
             <input
-              className={`form-control ${erros.entradaNoCd ? "is-invalid" : ""}`}
+              className="form-control"
               type="time"
               value={entradaNoCd}
               onChange={(e) => {
                 setEntradaNoCd(e.target.value);
-                setErros((prev) => ({ ...prev, entradaNoCd: false }));
               }}
             />
-            {erros.entradaNoCd && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
           </div>
 
           <div className="col-md-3 mb-3">
@@ -144,82 +132,56 @@ function CadastroRecebimento({
           </div>
 
           <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Horário Início <span className="campo-obrigatorio">*</span>
-            </label>
+            <label className="form-label">Horário Início </label>
             <input
-              className={`form-control ${erros.horarioInicio ? "is-invalid" : ""}`}
+              className="form-control"
               type="time"
               value={horarioInicio}
               onChange={(e) => {
                 setHorarioInicio(e.target.value);
-                setErros((prev) => ({ ...prev, horarioInicio: false }));
               }}
             />
-            {erros.horarioInicio && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
           </div>
 
           <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Horário Final <span className="campo-obrigatorio">*</span>
-            </label>
+            <label className="form-label">Horário Final </label>
             <input
-              className={`form-control ${erros.horarioFinal ? "is-invalid" : ""}`}
+              className="form-control"
               type="time"
               value={horarioFinal}
               onChange={(e) => {
                 setHorarioFinal(e.target.value);
-                setErros((prev) => ({ ...prev, horarioFinal: false }));
               }}
             />
-            {erros.horarioFinal && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
           </div>
 
           <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Desconto Hora <span className="campo-obrigatorio">*</span>
-            </label>
+            <label className="form-label">Desconto Hora</label>
             <input
-              className={`form-control ${erros.descontoHora ? "is-invalid" : ""}`}
+              className="form-control"
               type="time"
               value={descontoHora}
               onChange={(e) => {
                 setDescontoHora(e.target.value);
-                setErros((prev) => ({ ...prev, descontoHora: false }));
               }}
             />
-            {erros.descontoHora && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
-          </div>
+            </div>
 
           <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Número Palet <span className="campo-obrigatorio">*</span>
-            </label>
+            <label className="form-label">Número Palet </label>
             <input
-              className={`form-control ${erros.numeroPalet ? "is-invalid" : ""}`}
+              className="form-control"
               type="number"
               min="0"
               value={numeroPalet}
               onChange={(e) => {
                 setNumeroPalet(e.target.value);
-                setErros((prev) => ({ ...prev, numeroPalet: false }));
               }}
             />
-            {erros.numeroPalet && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
-          </div>
+           </div>
 
           <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Tipo Carga <span className="campo-obrigatorio">*</span>
-            </label>
+            <label className="form-label">Tipo Carga</label>
             <div
               className={`d-flex gap-2 tipo-carga-box ${
                 erros.tipoCarga ? "tipo-carga-erro" : ""
@@ -251,29 +213,20 @@ function CadastroRecebimento({
                 BAT
               </button>
             </div>
-            {erros.tipoCarga && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
           </div>
 
           <div className="col-md-3 mb-3">
-            <label className="form-label">
-              Nº Homens <span className="campo-obrigatorio">*</span>
-            </label>
+            <label className="form-label">Nº Homens</label>
             <input
-              className={`form-control ${erros.numHomens ? "is-invalid" : ""}`}
+              className="form-control"
               type="number"
               min="0"
               value={numHomens}
               onChange={(e) => {
                 setNumHomens(e.target.value);
-                setErros((prev) => ({ ...prev, numHomens: false }));
               }}
             />
-            {erros.numHomens && (
-              <div className="mensagem-erro">Campo Obrigatório</div>
-            )}
-          </div>
+           </div>
 
           <div className="col-md-3 mb-3">
             <label className="form-label">Avaria</label>
