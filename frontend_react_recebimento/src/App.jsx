@@ -1,9 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  getRecebimentos,
-  criarRecebimento,
-  atualizarRecebimento,
-} from "./services/api";
+import { getRecebimentos, criarRecebimento } from "./services/api";
 import "./Appcss.css";
 
 function App() {
@@ -27,14 +23,6 @@ function App() {
   const [selecionado, setSelecionado] = useState("");
   const [indiceAtivo, setIndiceAtivo] = useState(-1);
   const [erros, setErros] = useState({});
-
-  const [editandoId, setEditandoId] = useState(null);
-  const [registroEditando, setRegistroEditando] = useState(null);
-  const [salvandoEdicao, setSalvandoEdicao] = useState(false);
-
-  const [salvandoStatusId, setSalvandoStatusId] = useState(null);
-  const [salvandoObservacaoId, setSalvandoObservacaoId] = useState(null);
-  const [observacoesDraft, setObservacoesDraft] = useState({});
 
   const containerRef = useRef(null);
   const inputFornecedorRef = useRef(null);
@@ -107,6 +95,7 @@ function App() {
     ];
 
     const faltando = camposObrigatorios.some((valor) => !valorPreenchido(valor));
+
     return faltando ? "PENDENTE" : "RESOLVIDO";
   }
 
@@ -179,55 +168,10 @@ function App() {
     return valor;
   }
 
-  function montarPayloadRegistro(item, sobrescrever = {}) {
-    return {
-      fornecedor: item.fornecedor || "",
-      chegada_na_rua: item.chegada_na_rua || "",
-      entrada_no_cd: item.entrada_no_cd || "",
-      data: item.data || "",
-      horario_inicio: item.horario_inicio || "",
-      horario_final: item.horario_final || "",
-      desconto_hora: item.desconto_hora || "",
-      numero_palet:
-        item.numero_palet === "" ||
-        item.numero_palet === null ||
-        item.numero_palet === undefined
-          ? null
-          : Number(item.numero_palet),
-      tipo_carga: item.tipo_carga || "PAL",
-      num_homens:
-        item.num_homens === "" ||
-        item.num_homens === null ||
-        item.num_homens === undefined
-          ? null
-          : Number(item.num_homens),
-      avaria:
-        item.avaria === "" || item.avaria === null || item.avaria === undefined
-          ? 0
-          : Number(item.avaria),
-      volumes:
-        item.volumes === "" || item.volumes === null || item.volumes === undefined
-          ? 0
-          : Number(item.volumes),
-      descricao: item.descricao || "",
-      status_manual: item.status_manual || calcularStatusRegistro(item),
-      observacao_status: item.observacao_status || "",
-      ...sobrescrever,
-    };
-  }
-
   async function carregar() {
     try {
       const dados = await getRecebimentos();
-      const listaEnriquecida = enriquecerLista(dados);
-
-      setLista(listaEnriquecida);
-
-      const drafts = {};
-      listaEnriquecida.forEach((item) => {
-        drafts[item.id] = item.observacao_status || "";
-      });
-      setObservacoesDraft(drafts);
+      setLista(enriquecerLista(dados));
     } catch (error) {
       console.error("Erro ao carregar recebimentos:", error);
       setLista([]);
@@ -360,6 +304,7 @@ function App() {
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
+
       if (total === 0) return;
 
       setAbrirLista(true);
@@ -372,6 +317,7 @@ function App() {
 
     if (e.key === "ArrowUp") {
       e.preventDefault();
+
       if (total === 0) return;
 
       setAbrirLista(true);
@@ -405,11 +351,6 @@ function App() {
   }
 
   function handleChangeObservacao(id, valor) {
-    setObservacoesDraft((prev) => ({
-      ...prev,
-      [id]: valor,
-    }));
-
     setLista((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, observacao_status: valor } : item
@@ -417,162 +358,12 @@ function App() {
     );
   }
 
-  async function salvarObservacao(id) {
-    const itemAtual = lista.find((item) => item.id === id);
-    if (!itemAtual) return;
-
-    const novaObservacao = observacoesDraft[id] ?? "";
-
-    setSalvandoObservacaoId(id);
-
-    try {
-      const payload = montarPayloadRegistro(itemAtual, {
-        observacao_status: novaObservacao,
-      });
-
-      await atualizarRecebimento(id, payload);
-
-      setLista((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, observacao_status: novaObservacao } : item
-        )
-      );
-    } catch (error) {
-      console.error("Erro ao salvar observação:", error);
-      alert("Erro ao salvar observação.");
-    } finally {
-      setSalvandoObservacaoId(null);
-    }
-  }
-
-  async function handleChangeStatus(id, novoStatus) {
-    const itemAtual = lista.find((item) => item.id === id);
-    if (!itemAtual) return;
-
-    const statusAnterior = itemAtual.status_manual || calcularStatusRegistro(itemAtual);
-
+  function handleChangeStatus(id, novoStatus) {
     setLista((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, status_manual: novoStatus } : item
       )
     );
-
-    setSalvandoStatusId(id);
-
-    try {
-      const payload = montarPayloadRegistro(itemAtual, {
-        status_manual: novoStatus,
-        observacao_status:
-          observacoesDraft[id] ?? itemAtual.observacao_status ?? "",
-      });
-
-      await atualizarRecebimento(id, payload);
-    } catch (error) {
-      console.error("Erro ao salvar status:", error);
-
-      setLista((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, status_manual: statusAnterior } : item
-        )
-      );
-
-      alert("Erro ao salvar status.");
-    } finally {
-      setSalvandoStatusId(null);
-    }
-  }
-
-  function iniciarEdicao(item) {
-    setEditandoId(item.id);
-    setRegistroEditando({
-      id: item.id,
-      fornecedor: item.fornecedor || "",
-      chegada_na_rua: item.chegada_na_rua || "",
-      entrada_no_cd: item.entrada_no_cd || "",
-      data: item.data || "",
-      horario_inicio: item.horario_inicio || "",
-      horario_final: item.horario_final || "",
-      desconto_hora: item.desconto_hora || "",
-      numero_palet:
-        item.numero_palet !== null && item.numero_palet !== undefined
-          ? String(item.numero_palet)
-          : "",
-      tipo_carga: item.tipo_carga || "PAL",
-      num_homens:
-        item.num_homens !== null && item.num_homens !== undefined
-          ? String(item.num_homens)
-          : "",
-      avaria:
-        item.avaria !== null && item.avaria !== undefined
-          ? String(item.avaria)
-          : "",
-      volumes:
-        item.volumes !== null && item.volumes !== undefined
-          ? String(item.volumes)
-          : "",
-      descricao: item.descricao || "",
-      status_manual: item.status_manual || calcularStatusRegistro(item),
-      observacao_status: item.observacao_status || "",
-    });
-  }
-
-  function cancelarEdicao() {
-    setEditandoId(null);
-    setRegistroEditando(null);
-  }
-
-  function handleChangeEdicao(campo, valor) {
-    setRegistroEditando((prev) => ({
-      ...prev,
-      [campo]: valor,
-    }));
-  }
-
-  async function salvarEdicao(id) {
-    if (!registroEditando) return;
-
-    setSalvandoEdicao(true);
-
-    try {
-      const payload = {
-        fornecedor: registroEditando.fornecedor,
-        chegada_na_rua: registroEditando.chegada_na_rua,
-        entrada_no_cd: registroEditando.entrada_no_cd,
-        data: registroEditando.data,
-        horario_inicio: registroEditando.horario_inicio,
-        horario_final: registroEditando.horario_final,
-        desconto_hora: registroEditando.desconto_hora,
-        numero_palet:
-          registroEditando.numero_palet === ""
-            ? null
-            : Number(registroEditando.numero_palet),
-        tipo_carga: registroEditando.tipo_carga,
-        num_homens:
-          registroEditando.num_homens === ""
-            ? null
-            : Number(registroEditando.num_homens),
-        avaria:
-          registroEditando.avaria === ""
-            ? 0
-            : Number(registroEditando.avaria),
-        volumes:
-          registroEditando.volumes === ""
-            ? 0
-            : Number(registroEditando.volumes),
-        descricao: registroEditando.descricao,
-        status_manual: registroEditando.status_manual,
-        observacao_status: registroEditando.observacao_status,
-      };
-
-      await atualizarRecebimento(id, payload);
-      await carregar();
-      cancelarEdicao();
-    } catch (error) {
-      console.error("Erro ao atualizar recebimento:", error);
-      alert("Erro ao salvar edição.");
-    } finally {
-      setSalvandoEdicao(false);
-    }
   }
 
   return (
@@ -853,7 +644,6 @@ function App() {
         <div className="d-flex flex-column gap-3">
           {lista.map((item) => {
             const statusExibido = item.status_manual || calcularStatusRegistro(item);
-            const emEdicao = editandoId === item.id;
 
             return (
               <div
@@ -872,376 +662,124 @@ function App() {
                       </div>
                     </div>
 
-                    <div className="d-flex align-items-center gap-2 flex-wrap">
-                      <span
-                        style={{
-                          ...getStatusStyle(statusExibido),
-                          padding: "6px 12px",
-                          borderRadius: "20px",
-                          fontWeight: "700",
-                          fontSize: "12px",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {statusExibido}
-                      </span>
-
-                      {!emEdicao ? (
-                        <button
-                          type="button"
-                          className="btn btn-outline-primary btn-sm"
-                          onClick={() => iniciarEdicao(item)}
-                        >
-                          Editar
-                        </button>
-                      ) : (
-                        <>
-                          <button
-                            type="button"
-                            className="btn btn-success btn-sm"
-                            onClick={() => salvarEdicao(item.id)}
-                            disabled={salvandoEdicao}
-                          >
-                            {salvandoEdicao ? "Salvando..." : "Salvar"}
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-secondary btn-sm"
-                            onClick={cancelarEdicao}
-                            disabled={salvandoEdicao}
-                          >
-                            Cancelar
-                          </button>
-                        </>
-                      )}
-                    </div>
+                    <span
+                      style={{
+                        ...getStatusStyle(statusExibido),
+                        padding: "6px 12px",
+                        borderRadius: "20px",
+                        fontWeight: "700",
+                        fontSize: "12px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {statusExibido}
+                    </span>
                   </div>
 
                   <div className="row g-2 mb-3">
                     <div className="col-md-4">
                       <div className="border rounded p-2 h-100">
-                        <strong>Fornecedor:</strong>
-                        {emEdicao ? (
-                          <input
-                            className="form-control mt-1"
-                            value={registroEditando.fornecedor}
-                            onChange={(e) =>
-                              handleChangeEdicao("fornecedor", e.target.value)
-                            }
-                          />
-                        ) : (
-                          <div>{item.fornecedor || "-"}</div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="border rounded p-2 h-100">
                         <strong>Chegada na Rua:</strong>
-                        {emEdicao ? (
-                          <input
-                            className="form-control mt-1"
-                            type="time"
-                            value={registroEditando.chegada_na_rua}
-                            onChange={(e) =>
-                              handleChangeEdicao("chegada_na_rua", e.target.value)
-                            }
-                          />
-                        ) : (
-                          <div>{item.chegada_na_rua || "-"}</div>
-                        )}
+                        <div>{item.chegada_na_rua || "-"}</div>
                       </div>
                     </div>
 
                     <div className="col-md-4">
                       <div className="border rounded p-2 h-100">
                         <strong>Entrada no CD:</strong>
-                        {emEdicao ? (
-                          <input
-                            className="form-control mt-1"
-                            type="time"
-                            value={registroEditando.entrada_no_cd}
-                            onChange={(e) =>
-                              handleChangeEdicao("entrada_no_cd", e.target.value)
-                            }
-                          />
-                        ) : (
-                          <div>{item.entrada_no_cd || "-"}</div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="col-md-4">
-                      <div className="border rounded p-2 h-100">
-                        <strong>Data:</strong>
-                        {emEdicao ? (
-                          <input
-                            className="form-control mt-1"
-                            type="date"
-                            value={registroEditando.data}
-                            onChange={(e) =>
-                              handleChangeEdicao("data", e.target.value)
-                            }
-                          />
-                        ) : (
-                          <div>{formatarDataBR(item.data)}</div>
-                        )}
+                        <div>{item.entrada_no_cd || "-"}</div>
                       </div>
                     </div>
 
                     <div className="col-md-4">
                       <div className="border rounded p-2 h-100">
                         <strong>Horário Início:</strong>
-                        {emEdicao ? (
-                          <input
-                            className="form-control mt-1"
-                            type="time"
-                            value={registroEditando.horario_inicio}
-                            onChange={(e) =>
-                              handleChangeEdicao("horario_inicio", e.target.value)
-                            }
-                          />
-                        ) : (
-                          <div>{item.horario_inicio || "-"}</div>
-                        )}
+                        <div>{item.horario_inicio || "-"}</div>
                       </div>
                     </div>
 
                     <div className="col-md-4">
                       <div className="border rounded p-2 h-100">
                         <strong>Horário Final:</strong>
-                        {emEdicao ? (
-                          <input
-                            className="form-control mt-1"
-                            type="time"
-                            value={registroEditando.horario_final}
-                            onChange={(e) =>
-                              handleChangeEdicao("horario_final", e.target.value)
-                            }
-                          />
-                        ) : (
-                          <div>{item.horario_final || "-"}</div>
-                        )}
+                        <div>{item.horario_final || "-"}</div>
                       </div>
                     </div>
 
                     <div className="col-md-4">
                       <div className="border rounded p-2 h-100">
                         <strong>Desconto Hora:</strong>
-                        {emEdicao ? (
-                          <input
-                            className="form-control mt-1"
-                            type="time"
-                            value={registroEditando.desconto_hora}
-                            onChange={(e) =>
-                              handleChangeEdicao("desconto_hora", e.target.value)
-                            }
-                          />
-                        ) : (
-                          <div>{item.desconto_hora || "-"}</div>
-                        )}
+                        <div>{item.desconto_hora || "-"}</div>
                       </div>
                     </div>
 
                     <div className="col-md-4">
                       <div className="border rounded p-2 h-100">
                         <strong>Número Palet:</strong>
-                        {emEdicao ? (
-                          <input
-                            className="form-control mt-1"
-                            type="number"
-                            min="0"
-                            value={registroEditando.numero_palet}
-                            onChange={(e) =>
-                              handleChangeEdicao("numero_palet", e.target.value)
-                            }
-                          />
-                        ) : (
-                          <div>{item.numero_palet ?? "-"}</div>
-                        )}
+                        <div>{item.numero_palet ?? "-"}</div>
                       </div>
                     </div>
 
                     <div className="col-md-4">
                       <div className="border rounded p-2 h-100">
                         <strong>Tipo Carga:</strong>
-                        {emEdicao ? (
-                          <select
-                            className="form-select mt-1"
-                            value={registroEditando.tipo_carga}
-                            onChange={(e) =>
-                              handleChangeEdicao("tipo_carga", e.target.value)
-                            }
-                          >
-                            <option value="PAL">PAL</option>
-                            <option value="BAT">BAT</option>
-                          </select>
-                        ) : (
-                          <div>{item.tipo_carga || "-"}</div>
-                        )}
+                        <div>{item.tipo_carga || "-"}</div>
                       </div>
                     </div>
 
                     <div className="col-md-4">
                       <div className="border rounded p-2 h-100">
                         <strong>Nº Homens:</strong>
-                        {emEdicao ? (
-                          <input
-                            className="form-control mt-1"
-                            type="number"
-                            min="0"
-                            value={registroEditando.num_homens}
-                            onChange={(e) =>
-                              handleChangeEdicao("num_homens", e.target.value)
-                            }
-                          />
-                        ) : (
-                          <div>{item.num_homens ?? "-"}</div>
-                        )}
+                        <div>{item.num_homens ?? "-"}</div>
                       </div>
                     </div>
 
                     <div className="col-md-4">
                       <div className="border rounded p-2 h-100">
                         <strong>Avaria:</strong>
-                        {emEdicao ? (
-                          <input
-                            className="form-control mt-1"
-                            type="number"
-                            min="0"
-                            value={registroEditando.avaria}
-                            onChange={(e) =>
-                              handleChangeEdicao("avaria", e.target.value)
-                            }
-                          />
-                        ) : (
-                          <div>{item.avaria ?? 0}</div>
-                        )}
+                        <div>{item.avaria ?? 0}</div>
                       </div>
                     </div>
 
                     <div className="col-md-4">
                       <div className="border rounded p-2 h-100">
                         <strong>Volumes:</strong>
-                        {emEdicao ? (
-                          <input
-                            className="form-control mt-1"
-                            type="number"
-                            min="0"
-                            value={registroEditando.volumes}
-                            onChange={(e) =>
-                              handleChangeEdicao("volumes", e.target.value)
-                            }
-                          />
-                        ) : (
-                          <div>{item.volumes ?? 0}</div>
-                        )}
+                        <div>{item.volumes ?? 0}</div>
                       </div>
                     </div>
 
                     <div className="col-md-8">
                       <div className="border rounded p-2 h-100">
                         <strong>Descrição:</strong>
-                        {emEdicao ? (
-                          <textarea
-                            className="form-control mt-1"
-                            rows="2"
-                            value={registroEditando.descricao}
-                            onChange={(e) =>
-                              handleChangeEdicao("descricao", e.target.value)
-                            }
-                          />
-                        ) : (
-                          <div>{item.descricao || "-"}</div>
-                        )}
+                        <div>{item.descricao || "-"}</div>
                       </div>
                     </div>
                   </div>
-
                   <div className="mb-3">
                     <label className="form-label fw-semibold">Editar status</label>
-                    {emEdicao ? (
-                      <select
-                        className="form-select"
-                        style={{ maxWidth: "220px" }}
-                        value={registroEditando.status_manual}
-                        onChange={(e) =>
-                          handleChangeEdicao("status_manual", e.target.value)
-                        }
-                      >
-                        <option value="PENDENTE">PENDENTE</option>
-                        <option value="RESOLVIDO">RESOLVIDO</option>
-                      </select>
-                    ) : (
-                      <>
-                        <select
-                          className="form-select"
-                          style={{ maxWidth: "220px" }}
-                          value={statusExibido}
-                          onChange={(e) => handleChangeStatus(item.id, e.target.value)}
-                          disabled={salvandoStatusId === item.id}
-                        >
-                          <option value="PENDENTE">PENDENTE</option>
-                          <option value="RESOLVIDO">RESOLVIDO</option>
-                        </select>
-
-                        {salvandoStatusId === item.id && (
-                          <div className="text-muted mt-1" style={{ fontSize: "12px" }}>
-                            Salvando status...
-                          </div>
-                        )}
-                      </>
-                    )}
+                    <select
+                      className="form-select"
+                      style={{ maxWidth: "220px" }}
+                      value={statusExibido}
+                      onChange={(e) => handleChangeStatus(item.id, e.target.value)}
+                    >
+                      <option value="PENDENTE">PENDENTE</option>
+                      <option value="RESOLVIDO">RESOLVIDO</option>
+                    </select>
                   </div>
 
                   <div>
                     <label className="form-label fw-semibold">
                       Campo editável / observação
                     </label>
-
-                    {emEdicao ? (
-                      <textarea
-                        className="form-control"
-                        rows="3"
-                        value={registroEditando.observacao_status || ""}
-                        onChange={(e) =>
-                          handleChangeEdicao("observacao_status", e.target.value)
-                        }
-                        placeholder="Digite uma observação para este registro"
-                      />
-                    ) : (
-                      <div className="d-flex flex-column gap-2">
-                        <textarea
-                          className="form-control"
-                          rows="3"
-                          value={observacoesDraft[item.id] ?? ""}
-                          onChange={(e) =>
-                            handleChangeObservacao(item.id, e.target.value)
-                          }
-                          placeholder="Digite uma observação para este registro"
-                          disabled={salvandoObservacaoId === item.id}
-                        />
-
-                        <div className="d-flex align-items-center gap-2">
-                          <button
-                            type="button"
-                            className="btn btn-outline-primary btn-sm"
-                            onClick={() => salvarObservacao(item.id)}
-                            disabled={salvandoObservacaoId === item.id}
-                          >
-                            {salvandoObservacaoId === item.id
-                              ? "Salvando..."
-                              : "Salvar observação"}
-                          </button>
-
-                          {salvandoObservacaoId === item.id && (
-                            <span className="text-muted" style={{ fontSize: "12px" }}>
-                              Salvando observação...
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                    <textarea
+                      className="form-control"
+                      rows="3"
+                      value={item.observacao_status || ""}
+                      onChange={(e) =>
+                        handleChangeObservacao(item.id, e.target.value)
+                      }
+                      placeholder="Digite uma observação para este registro"
+                    />
                   </div>
                 </div>
               </div>
