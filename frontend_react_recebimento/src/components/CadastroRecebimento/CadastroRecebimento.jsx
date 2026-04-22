@@ -239,7 +239,7 @@ function CadastroRecebimento({
             />
           </div>
 
-          <div className="col-md-3 mb-3">
+          <div className="col-md-6 mb-3">
             <label className="form-label">Volumes</label>
             <input
               className="form-control"
@@ -250,13 +250,17 @@ function CadastroRecebimento({
             />
           </div>
 
-          <div className="col-12 mb-3">
-            <label className="form-label">Descrição</label>
+          <div className="col-md-6 mb-3">
+            <label className="form-label">Descrição da Avaria</label>
             <textarea
-              className="form-control"
-              rows="3"
+              className="form-control textarea-auto"
+              rows="1"
               value={descricao}
-              onChange={(e) => setDescricao(e.target.value)}
+              onChange={(e) => {
+              setDescricao(e.target.value);
+              e.target.style.height = "auto";
+              e.target.style.height = e.target.scrollHeight + "px";
+              }}
             />
           </div>
         </div>

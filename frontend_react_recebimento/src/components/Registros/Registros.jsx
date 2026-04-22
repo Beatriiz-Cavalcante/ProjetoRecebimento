@@ -250,7 +250,7 @@ function Registros({
 
                           <div className="col-md-8">
                             <div className="border rounded p-2 h-100">
-                              <strong>Descrição:</strong>
+                              <strong>Descrição da Avaria:</strong>
                               <textarea
                                 className="form-control mt-1"
                                 rows="3"

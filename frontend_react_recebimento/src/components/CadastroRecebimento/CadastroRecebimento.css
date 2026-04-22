@@ -47,3 +47,9 @@
 .tipo-carga-erro {
   border: 1px solid #dc3545;
 }
+
+.textarea-auto {
+  min-height: 38px; /* altura padrão do input bootstrap */
+  resize: none;     /* remove botão de arrastar */
+  overflow: hidden; /* remove scroll */
+}
