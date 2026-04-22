@@ -133,6 +133,7 @@ function App() {
         item.observacao_status && String(item.observacao_status).trim() !== ""
           ? item.observacao_status
           : gerarObservacaoAutomatica(item),
+      observacao_manual: item.observacao_manual || "",
     }));
   }
 
@@ -370,54 +371,54 @@ function App() {
   }
 
   async function salvarEdicaoRegistro(item) {
-    try {
-      const payload = {
-        fornecedor: item.fornecedor || null,
-        chegada_na_rua: item.chegada_na_rua || null,
-        entrada_no_cd: item.entrada_no_cd || null,
-        data: item.data || null,
-        horario_inicio: item.horario_inicio || null,
-        horario_final: item.horario_final || null,
-        desconto_hora: item.desconto_hora || null,
-        numero_palet:
-          item.numero_palet === "" || item.numero_palet === null
-            ? null
-            : Number(item.numero_palet),
-        tipo_carga: item.tipo_carga || null,
-        num_homens:
-          item.num_homens === "" || item.num_homens === null
-            ? null
-            : Number(item.num_homens),
-        avaria:
-          item.avaria === "" || item.avaria === null ? 0 : Number(item.avaria),
-        volumes:
-          item.volumes === "" || item.volumes === null ? 0 : Number(item.volumes),
-        descricao: item.descricao || "",
-        observacao_status: item.observacao_status || "",
-      };
+  try {
+    const payload = {
+      fornecedor: item.fornecedor || null,
+      chegada_na_rua: item.chegada_na_rua || null,
+      entrada_no_cd: item.entrada_no_cd || null,
+      data: item.data || null,
+      horario_inicio: item.horario_inicio || null,
+      horario_final: item.horario_final || null,
+      desconto_hora: item.desconto_hora || null,
+      numero_palet:
+        item.numero_palet === "" || item.numero_palet === null
+          ? null
+          : Number(item.numero_palet),
+      tipo_carga: item.tipo_carga || null,
+      num_homens:
+        item.num_homens === "" || item.num_homens === null
+          ? null
+          : Number(item.num_homens),
+      avaria:
+        item.avaria === "" || item.avaria === null ? 0 : Number(item.avaria),
+      volumes:
+        item.volumes === "" || item.volumes === null ? 0 : Number(item.volumes),
+      descricao: item.descricao || "",
+      observacao_manual: item.observacao_manual || "",
+    };
 
-      const atualizado = await atualizarRecebimento(item.id, payload);
+    const atualizado = await atualizarRecebimento(item.id, payload);
 
-      setLista((prev) =>
-        prev.map((registro) =>
-          registro.id === item.id
-            ? {
-                ...atualizado,
-                observacao_status:
-                  atualizado.observacao_status && String(atualizado.observacao_status).trim() !== ""
-                    ? atualizado.observacao_status
-                    : gerarObservacaoAutomatica(atualizado),
-              }
-            : registro
-        )
-      );
+    setLista((prev) =>
+      prev.map((registro) =>
+        registro.id === item.id ? atualizado : registro
+      )
+    );
 
-      setEditandoId(null);
-    } catch (error) {
-      console.error("Erro ao salvar edição:", error);
-      alert("Erro ao salvar edição do registro.");
-    }
+    setEditandoId(null);
+  } catch (error) {
+    console.error("Erro ao salvar edição:", error);
+    alert("Erro ao salvar edição do registro.");
   }
+}
+
+  function handleChangeObservacaoManual(id, valor) {
+  setLista((prev) =>
+    prev.map((item) =>
+      item.id === id ? { ...item, observacao_manual: valor } : item
+    )
+  );
+}
 
   return (
     <div className="container mt-4">
@@ -476,6 +477,7 @@ function App() {
         cancelarEdicao={cancelarEdicao}
         handleChangeCampoRegistro={handleChangeCampoRegistro}
         salvarEdicaoRegistro={salvarEdicaoRegistro}
+        handleChangeObservacaoManual={handleChangeObservacaoManual}
       />
     </div>
   );

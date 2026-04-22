@@ -11,6 +11,7 @@ function Registros({
   cancelarEdicao,
   handleChangeCampoRegistro,
   salvarEdicaoRegistro,
+  handleChangeObservacaoManual,
 }) {
   return (
     <>
@@ -276,19 +277,27 @@ function Registros({
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label fw-semibold">
-                      Campo editável / observação
-                    </label>
+                    <label className="form-label fw-semibold">Observação Status</label>
+                    <textarea
+                      className="form-control"
+                      rows="2"
+                      value={item.observacao_status || ""}
+                      readOnly
+                    />
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label fw-semibold">Observação</label>
                     <textarea
                       className="form-control"
                       rows="3"
-                      value={item.observacao_status || ""}
+                      value={item.observacao_manual || ""}
                       onChange={(e) =>
-                        handleChangeObservacao(item.id, e.target.value)
+                        handleChangeObservacaoManual(item.id, e.target.value)
                       }
-                      placeholder="Digite uma observação para este registro"
+                      placeholder="Digite uma observação manual para este registro"
                     />
-                  </div>
+                </div>
 
                   <div className="mt-3 d-flex gap-2 flex-wrap">
                     {emEdicao ? (
