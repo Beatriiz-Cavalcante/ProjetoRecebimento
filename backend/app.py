@@ -100,9 +100,10 @@ def criar_operacao():
                 volumes,
                 descricao,
                 status,
-                observacao_status
+                observacao_status,
+                observacao_manual
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING *
         """, (
             data.get("fornecedor"),
@@ -119,7 +120,8 @@ def criar_operacao():
             data.get("volumes", 0),
             data.get("descricao", ""),
             status_calculado,
-            observacao_final
+            observacao_final,
+            data.get("observacao_manual", "")
         ))
 
         nova_operacao = cursor.fetchone()
@@ -160,6 +162,7 @@ def listar_operacoes():
                 criado_em,
                 status,
                 observacao_status
+                observacao_manual
             FROM operacoes_logistica
             WHERE ativo = TRUE
             ORDER BY id DESC
@@ -173,21 +176,15 @@ def listar_operacoes():
     except Exception as e:
         return jsonify({"erro": f"Erro ao listar operações: {str(e)}"}), 500
 
-#terceiro end point (PUT - editar dados)
+# terceiro end point (PUT - editar dados)
 @app.route("/operacoes/<int:id>", methods=["PUT"])
 def atualizar_operacao(id):
     try:
         data = request.json or {}
 
-        status_recebido = data.get("status")
-        if status_recebido in ["PENDENTE", "RESOLVIDO"]:
-            status_final = status_recebido
-        else:
-            status_final = calcular_status(data)
-
-        observacao_final = data.get("observacao_status")
-        if not valor_preenchido(observacao_final):
-            observacao_final = gerar_observacao_automatica(data)
+        status_final = calcular_status(data)
+        observacao_final = gerar_observacao_automatica(data)
+        observacao_manual = data.get("observacao_manual", "")
 
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
@@ -207,7 +204,8 @@ def atualizar_operacao(id):
                 volumes = %s,
                 descricao = %s,
                 status = %s,
-                observacao_status = %s
+                observacao_status = %s,
+                observacao_manual = %s
             WHERE id = %s
             RETURNING *
         """, (
@@ -226,6 +224,7 @@ def atualizar_operacao(id):
             data.get("descricao", ""),
             status_final,
             observacao_final,
+            observacao_manual,
             id
         ))
 
