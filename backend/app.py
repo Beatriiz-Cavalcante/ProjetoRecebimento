@@ -161,7 +161,7 @@ def listar_operacoes():
                 ativo,
                 criado_em,
                 status,
-                observacao_status
+                observacao_status,
                 observacao_manual
             FROM operacoes_logistica
             WHERE ativo = TRUE
