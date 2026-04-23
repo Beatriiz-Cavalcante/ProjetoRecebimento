@@ -5,6 +5,7 @@ from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
 CORS(app)
+
 conn = psycopg2.connect(
     host="localhost",
     database="logistica_teste",
@@ -22,6 +23,10 @@ def calcular_status(data):
         data.get("chegada_na_rua"),
         data.get("entrada_no_cd"),
         data.get("data"),
+        data.get("nome_motorista"),
+        data.get("cpf_motorista"),
+        data.get("placa_carro"),
+        data.get("qt_notas"),
         data.get("horario_inicio"),
         data.get("horario_final"),
         data.get("desconto_hora"),
@@ -44,6 +49,14 @@ def gerar_observacao_automatica(data):
         faltando.append("Entrada no CD")
     if not valor_preenchido(data.get("data")):
         faltando.append("Data")
+    if not valor_preenchido(data.get("nome_motorista")):
+        faltando.append("Nome Motorista")
+    if not valor_preenchido(data.get("cpf_motorista")):
+        faltando.append("CPF Motorista")
+    if not valor_preenchido(data.get("placa_carro")):
+        faltando.append("Placa Carro")
+    if not valor_preenchido(data.get("qt_notas")) and data.get("qt_notas") != 0:
+        faltando.append("Qt Notas")
     if not valor_preenchido(data.get("horario_inicio")):
         faltando.append("Horário Início")
     if not valor_preenchido(data.get("horario_final")):
@@ -56,8 +69,10 @@ def gerar_observacao_automatica(data):
         faltando.append("Tipo Carga")
     if not valor_preenchido(data.get("num_homens")) and data.get("num_homens") != 0:
         faltando.append("Nº Homens")
+
     if faltando:
         return "Faltando preencher: " + ", ".join(faltando)
+
     return "Registro preenchido corretamente."
 
 def normalizar_saida(registro):
@@ -70,7 +85,7 @@ def normalizar_saida(registro):
 def home():
     return "API rodando 🚀"
 
-#primeiro end point (POST - criar)
+# POST - criar
 @app.route('/operacoes', methods=['POST'])
 def criar_operacao():
     try:
@@ -90,6 +105,10 @@ def criar_operacao():
                 chegada_na_rua,
                 entrada_no_cd,
                 data,
+                nome_motorista,
+                cpf_motorista,
+                placa_carro,
+                qt_notas,
                 horario_inicio,
                 horario_final,
                 desconto_hora,
@@ -103,13 +122,17 @@ def criar_operacao():
                 observacao_status,
                 observacao_manual
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING *
         """, (
             data.get("fornecedor"),
             data.get("chegada_na_rua"),
             data.get("entrada_no_cd"),
             data.get("data"),
+            data.get("nome_motorista"),
+            data.get("cpf_motorista"),
+            data.get("placa_carro"),
+            data.get("qt_notas"),
             data.get("horario_inicio"),
             data.get("horario_final"),
             data.get("desconto_hora"),
@@ -137,7 +160,7 @@ def criar_operacao():
         conn.rollback()
         return jsonify({"erro": f"Erro ao criar operação: {str(e)}"}), 500
 
-#segundo end point (GET - puxar/ler dados)
+# GET - listar
 @app.route('/operacoes', methods=['GET'])
 def listar_operacoes():
     try:
@@ -149,6 +172,10 @@ def listar_operacoes():
                 chegada_na_rua,
                 entrada_no_cd,
                 data,
+                nome_motorista,
+                cpf_motorista,
+                placa_carro,
+                qt_notas,
                 horario_inicio,
                 horario_final,
                 desconto_hora,
@@ -176,7 +203,7 @@ def listar_operacoes():
     except Exception as e:
         return jsonify({"erro": f"Erro ao listar operações: {str(e)}"}), 500
 
-# terceiro end point (PUT - editar dados)
+# PUT - editar
 @app.route("/operacoes/<int:id>", methods=["PUT"])
 def atualizar_operacao(id):
     try:
@@ -194,6 +221,10 @@ def atualizar_operacao(id):
                 chegada_na_rua = %s,
                 entrada_no_cd = %s,
                 data = %s,
+                nome_motorista = %s,
+                cpf_motorista = %s,
+                placa_carro = %s,
+                qt_notas = %s,
                 horario_inicio = %s,
                 horario_final = %s,
                 desconto_hora = %s,
@@ -213,6 +244,10 @@ def atualizar_operacao(id):
             data.get("chegada_na_rua"),
             data.get("entrada_no_cd"),
             data.get("data"),
+            data.get("nome_motorista"),
+            data.get("cpf_motorista"),
+            data.get("placa_carro"),
+            data.get("qt_notas"),
             data.get("horario_inicio"),
             data.get("horario_final"),
             data.get("desconto_hora"),
@@ -246,8 +281,8 @@ def atualizar_operacao(id):
     except Exception as e:
         conn.rollback()
         return jsonify({"erro": f"Erro ao atualizar operação: {str(e)}"}), 500
-    
-# Método PUT - atualizar somente status e observação
+
+# PUT - atualizar somente status e observação
 @app.route("/operacoes/<int:id>/status", methods=["PUT"])
 def atualizar_status_operacao(id):
     try:
@@ -289,7 +324,7 @@ def atualizar_status_operacao(id):
         conn.rollback()
         return jsonify({"erro": f"Erro ao atualizar status: {str(e)}"}), 500
 
-#quarto end point (delete - apagar)
+# DELETE - apagar logicamente
 @app.route('/operacoes/<int:id>', methods=['DELETE'])
 def deletar_operacao(id):
     try:
