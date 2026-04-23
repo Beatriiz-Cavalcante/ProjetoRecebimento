@@ -1,0 +1,42 @@
+.registro-card {
+  border-radius: 12px;
+}
+
+.registro-data {
+  font-size: 14px;
+}
+
+.registro-status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.registro-status-select {
+  max-width: 220px;
+}
+
+.container-registros {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 5px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  background: #fafafa;
+  margin-bottom: 2rem;
+}
+
+.observacao-linha {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.texto-linha {
+  flex: 1;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 2px;
+  color: #555;
+}

@@ -30,7 +30,7 @@ function Registros({
                 <div key={item.id} className="card shadow-sm registro-card">
                   <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                      <div className="lex-grow-1">
+                      <div className="flex-grow-1">
                         <h5 className="card-title mb-1 d-flex align-items-center gap-2 flex-wrap">
                           #{item.id} -{" "}
                           {emEdicao ? (
@@ -39,7 +39,11 @@ function Registros({
                               className="form-control"
                               value={item.fornecedor || ""}
                               onChange={(e) =>
-                                handleChangeCampoRegistro(item.id, "fornecedor", e.target.value)
+                                handleChangeCampoRegistro(
+                                  item.id,
+                                  "fornecedor",
+                                  e.target.value
+                                )
                               }
                             />
                           ) : (
@@ -74,30 +78,50 @@ function Registros({
                       </span>
                     </div>
 
+                    <div className="row g-2 mb-3">
+                      <div className="col-md-3">
+                        <div className="border rounded p-2 h-100 bg-light">
+                          <strong>Nome Motorista:</strong>
+                          <div>{item.nome_motorista || "-"}</div>
+                        </div>
+                      </div>
+
+                      <div className="col-md-3">
+                        <div className="border rounded p-2 h-100 bg-light">
+                          <strong>CPF Motorista:</strong>
+                          <div>{item.cpf_motorista || "-"}</div>
+                        </div>
+                      </div>
+
+                      <div className="col-md-3">
+                        <div className="border rounded p-2 h-100 bg-light">
+                          <strong>Placa Carro:</strong>
+                          <div>{item.placa_carro || "-"}</div>
+                        </div>
+                      </div>
+
+                      <div className="col-md-3">
+                        <div className="border rounded p-2 h-100 bg-light">
+                          <strong>Quantidade de Notas:</strong>
+                          <div>{item.qt_notas ?? "-"}</div>
+                        </div>
+                      </div>
+                    </div>
+
                     {!emEdicao && (
                       <>
                         <div className="mb-3">
-                          <label className="form-label fw-semibold">Observação Status: </label> {" "}
+                          <label className="form-label fw-semibold">
+                            Observação Status:
+                          </label>{" "}
                           <span>{item.observacao_status || "-"}</span>
                         </div>
 
                         <div className="mb-3 observacao-linha">
                           <span className="fw-semibold">Observação:</span>
-                          {emEdicao ? (
-                            <input
-                              type="text"
-                              className="input-linha"
-                              value={item.observacao_manual || ""}
-                              onChange={(e) =>
-                                handleChangeObservacaoManual(item.id, e.target.value)
-                              }
-                              placeholder="Digite uma observação"
-                            />
-                          ) : (
-                            <span className="texto-linha">
-                              {item.observacao_manual || "\u00A0"}
-                            </span>
-                          )}
+                          <span className="texto-linha">
+                            {item.observacao_manual || "\u00A0"}
+                          </span>
                         </div>
                       </>
                     )}
@@ -113,7 +137,11 @@ function Registros({
                                 className="form-control mt-1"
                                 value={item.chegada_na_rua || ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "chegada_na_rua", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "chegada_na_rua",
+                                    e.target.value
+                                  )
                                 }
                               />
                             </div>
@@ -127,7 +155,11 @@ function Registros({
                                 className="form-control mt-1"
                                 value={item.entrada_no_cd || ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "entrada_no_cd", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "entrada_no_cd",
+                                    e.target.value
+                                  )
                                 }
                               />
                             </div>
@@ -141,7 +173,11 @@ function Registros({
                                 className="form-control mt-1"
                                 value={item.horario_inicio || ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "horario_inicio", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "horario_inicio",
+                                    e.target.value
+                                  )
                                 }
                               />
                             </div>
@@ -155,7 +191,11 @@ function Registros({
                                 className="form-control mt-1"
                                 value={item.horario_final || ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "horario_final", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "horario_final",
+                                    e.target.value
+                                  )
                                 }
                               />
                             </div>
@@ -169,7 +209,11 @@ function Registros({
                                 className="form-control mt-1"
                                 value={item.desconto_hora || ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "desconto_hora", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "desconto_hora",
+                                    e.target.value
+                                  )
                                 }
                               />
                             </div>
@@ -183,7 +227,11 @@ function Registros({
                                 className="form-control mt-1"
                                 value={item.numero_palet ?? ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "numero_palet", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "numero_palet",
+                                    e.target.value
+                                  )
                                 }
                               />
                             </div>
@@ -196,7 +244,11 @@ function Registros({
                                 className="form-select mt-1"
                                 value={item.tipo_carga || ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "tipo_carga", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "tipo_carga",
+                                    e.target.value
+                                  )
                                 }
                               >
                                 <option value="">Selecione</option>
@@ -214,7 +266,11 @@ function Registros({
                                 className="form-control mt-1"
                                 value={item.num_homens ?? ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "num_homens", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "num_homens",
+                                    e.target.value
+                                  )
                                 }
                               />
                             </div>
@@ -228,7 +284,11 @@ function Registros({
                                 className="form-control mt-1"
                                 value={item.avaria ?? ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "avaria", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "avaria",
+                                    e.target.value
+                                  )
                                 }
                               />
                             </div>
@@ -242,7 +302,11 @@ function Registros({
                                 className="form-control mt-1"
                                 value={item.volumes ?? ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "volumes", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "volumes",
+                                    e.target.value
+                                  )
                                 }
                               />
                             </div>
@@ -256,7 +320,11 @@ function Registros({
                                 rows="3"
                                 value={item.descricao || ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "descricao", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "descricao",
+                                    e.target.value
+                                  )
                                 }
                               />
                             </div>
@@ -264,7 +332,9 @@ function Registros({
                         </div>
 
                         <div className="mb-3">
-                          <label className="form-label fw-semibold">Observação Status: </label> {" "}
+                          <label className="form-label fw-semibold">
+                            Observação Status:
+                          </label>{" "}
                           <span>{item.observacao_status || "-"}</span>
                         </div>
 

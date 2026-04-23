@@ -1,8 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { getRecebimentos, criarRecebimento, atualizarRecebimento } from "./services/api";
+import {
+  getRecebimentos,
+  criarRecebimento,
+  atualizarRecebimento,
+} from "./services/api";
 import "./Appcss.css";
+
 import CadastroRecebimento from "./components/CadastroRecebimento/CadastroRecebimento";
 import Registros from "./components/Registros/Registros";
+
+import CadastroRecebimentoPortaria from "./components/CadastroRecebimentoPortaria/CadastroRecebimentoPortaria";
+import Registrosportaria from "./components/Registrosportaria/Registrosportaria";
 
 function App() {
   const [lista, setLista] = useState([]);
@@ -134,6 +142,11 @@ function App() {
           ? item.observacao_status
           : gerarObservacaoAutomatica(item),
       observacao_manual: item.observacao_manual || "",
+      nome_motorista: item.nome_motorista || "",
+      cpf_motorista: item.cpf_motorista || "",
+      placa_carro: item.placa_carro || "",
+      qt_notas:
+        item.qt_notas === null || item.qt_notas === undefined ? "" : item.qt_notas,
     }));
   }
 
@@ -232,9 +245,7 @@ function App() {
 
     setErros(novosErros);
 
-    if (Object.keys(novosErros).length > 0) {
-      return;
-    }
+    if (Object.keys(novosErros).length > 0) return;
 
     try {
       await criarRecebimento({
@@ -259,6 +270,40 @@ function App() {
       inputFornecedorRef.current?.focus();
     } catch (error) {
       console.error("Erro ao salvar recebimento:", error);
+    }
+  }
+
+  async function handleSubmitPortaria(dados) {
+    try {
+      await criarRecebimento({
+        fornecedor: dados.fornecedor || null,
+        data: dados.data || null,
+        chegada_na_rua: dados.chegada_na_rua || null,
+        entrada_no_cd: dados.entrada_no_cd || null,
+        nome_motorista: dados.nome_motorista || null,
+        cpf_motorista: dados.cpf_motorista || null,
+        placa_carro: dados.placa_carro || null,
+        qt_notas:
+          dados.qt_notas === "" || dados.qt_notas === null || dados.qt_notas === undefined
+            ? null
+            : Number(dados.qt_notas),
+
+        horario_inicio: null,
+        horario_final: null,
+        desconto_hora: null,
+        numero_palet: null,
+        tipo_carga: null,
+        num_homens: null,
+        avaria: 0,
+        volumes: 0,
+        descricao: "",
+      });
+
+      await carregar();
+      alert("Cadastro da portaria realizado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao salvar cadastro da portaria:", error);
+      alert("Erro ao cadastrar na portaria.");
     }
   }
 
@@ -371,54 +416,64 @@ function App() {
   }
 
   async function salvarEdicaoRegistro(item) {
-  try {
-    const payload = {
-      fornecedor: item.fornecedor || null,
-      chegada_na_rua: item.chegada_na_rua || null,
-      entrada_no_cd: item.entrada_no_cd || null,
-      data: item.data || null,
-      horario_inicio: item.horario_inicio || null,
-      horario_final: item.horario_final || null,
-      desconto_hora: item.desconto_hora || null,
-      numero_palet:
-        item.numero_palet === "" || item.numero_palet === null
-          ? null
-          : Number(item.numero_palet),
-      tipo_carga: item.tipo_carga || null,
-      num_homens:
-        item.num_homens === "" || item.num_homens === null
-          ? null
-          : Number(item.num_homens),
-      avaria:
-        item.avaria === "" || item.avaria === null ? 0 : Number(item.avaria),
-      volumes:
-        item.volumes === "" || item.volumes === null ? 0 : Number(item.volumes),
-      descricao: item.descricao || "",
-      observacao_manual: item.observacao_manual || "",
-    };
+    try {
+      const payload = {
+        fornecedor: item.fornecedor || null,
+        chegada_na_rua: item.chegada_na_rua || null,
+        entrada_no_cd: item.entrada_no_cd || null,
+        data: item.data || null,
 
-    const atualizado = await atualizarRecebimento(item.id, payload);
+        nome_motorista: item.nome_motorista || null,
+        cpf_motorista: item.cpf_motorista || null,
+        placa_carro: item.placa_carro || null,
+        qt_notas:
+          item.qt_notas === "" || item.qt_notas === null || item.qt_notas === undefined
+            ? null
+            : Number(item.qt_notas),
 
-    setLista((prev) =>
-      prev.map((registro) =>
-        registro.id === item.id ? atualizado : registro
-      )
-    );
+        horario_inicio: item.horario_inicio || null,
+        horario_final: item.horario_final || null,
+        desconto_hora: item.desconto_hora || null,
+        numero_palet:
+          item.numero_palet === "" || item.numero_palet === null
+            ? null
+            : Number(item.numero_palet),
+        tipo_carga: item.tipo_carga || null,
+        num_homens:
+          item.num_homens === "" || item.num_homens === null
+            ? null
+            : Number(item.num_homens),
+        avaria:
+          item.avaria === "" || item.avaria === null ? 0 : Number(item.avaria),
+        volumes:
+          item.volumes === "" || item.volumes === null ? 0 : Number(item.volumes),
+        descricao: item.descricao || "",
+        observacao_manual: item.observacao_manual || "",
+      };
 
-    setEditandoId(null);
-  } catch (error) {
-    console.error("Erro ao salvar edição:", error);
-    alert("Erro ao salvar edição do registro.");
+      const atualizado = await atualizarRecebimento(item.id, payload);
+
+      setLista((prev) =>
+        prev.map((registro) =>
+          registro.id === item.id ? { ...registro, ...atualizado } : registro
+        )
+      );
+
+      setEditandoId(null);
+      await carregar();
+    } catch (error) {
+      console.error("Erro ao salvar edição:", error);
+      alert("Erro ao salvar edição do registro.");
+    }
   }
-}
 
   function handleChangeObservacaoManual(id, valor) {
-  setLista((prev) =>
-    prev.map((item) =>
-      item.id === id ? { ...item, observacao_manual: valor } : item
-    )
-  );
-}
+    setLista((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, observacao_manual: valor } : item
+      )
+    );
+  }
 
   return (
     <div className="container mt-4">
@@ -467,6 +522,23 @@ function App() {
       />
 
       <Registros
+        lista={lista}
+        calcularStatusRegistro={calcularStatusRegistro}
+        getStatusStyle={getStatusStyle}
+        formatarDataBR={formatarDataBR}
+        handleChangeObservacao={handleChangeObservacao}
+        editandoId={editandoId}
+        iniciarEdicao={iniciarEdicao}
+        cancelarEdicao={cancelarEdicao}
+        handleChangeCampoRegistro={handleChangeCampoRegistro}
+        salvarEdicaoRegistro={salvarEdicaoRegistro}
+        handleChangeObservacaoManual={handleChangeObservacaoManual}
+      />
+
+      <CadastroRecebimentoPortaria onSubmit={handleSubmitPortaria} />
+
+
+      <Registrosportaria
         lista={lista}
         calcularStatusRegistro={calcularStatusRegistro}
         getStatusStyle={getStatusStyle}
