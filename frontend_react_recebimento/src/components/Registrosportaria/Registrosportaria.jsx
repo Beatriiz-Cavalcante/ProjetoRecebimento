@@ -1,27 +1,53 @@
 import "./Registrosportaria.css";
 
 function Registrosportaria({
-  lista,
-  calcularStatusRegistro,
-  getStatusStyle,
-  formatarDataBR,
+  registros = [],
   editandoId,
   iniciarEdicao,
   cancelarEdicao,
   handleChangeCampoRegistro,
   salvarEdicaoRegistro,
 }) {
+  function formatarDataBR(valor) {
+    if (!valor) return "-";
+
+    if (typeof valor === "string" && valor.includes("-")) {
+      const partes = valor.split("-");
+      if (partes.length === 3) {
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      }
+    }
+
+    return valor;
+  }
+
+  function getStatusStyle(status) {
+    if (status === "RESOLVIDO") {
+      return {
+        backgroundColor: "#d4edda",
+        color: "#155724",
+        border: "1px solid #c3e6cb",
+      };
+    }
+
+    return {
+      backgroundColor: "#fff3cd",
+      color: "#856404",
+      border: "1px solid #ffeeba",
+    };
+  }
+
   return (
     <>
       <h2 className="mb-3">Registros Portaria</h2>
 
-      {lista.length === 0 ? (
+      {registros.length === 0 ? (
         <div className="alert alert-light border">Nenhum registro encontrado.</div>
       ) : (
         <div className="container-registros">
           <div className="d-flex flex-column gap-3">
-            {lista.map((item) => {
-              const statusExibido = calcularStatusRegistro(item);
+            {registros.map((item) => {
+              const statusExibido = item.status || "PENDENTE";
               const emEdicao = editandoId === item.id;
 
               return (
@@ -29,12 +55,12 @@ function Registrosportaria({
                   <div className="card-body">
                     <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                       <div className="flex-grow-1">
-                        <h5 className="card-title mb-1 d-flex align-items-center gap-2 flex-wrap">
+                        <h5 className="card-title mb-1">
                           #{item.id} -{" "}
                           {emEdicao ? (
                             <input
                               type="text"
-                              className="form-control"
+                              className="form-control mt-1"
                               value={item.fornecedor || ""}
                               onChange={(e) =>
                                 handleChangeCampoRegistro(
@@ -51,17 +77,21 @@ function Registrosportaria({
 
                         <div className="text-muted registro-data mt-2">
                           {emEdicao ? (
-                            <div>
+                            <>
                               <strong>Data:</strong>
                               <input
                                 type="date"
                                 className="form-control mt-1"
                                 value={item.data || ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "data", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "data",
+                                    e.target.value
+                                  )
                                 }
                               />
-                            </div>
+                            </>
                           ) : (
                             <>Data: {formatarDataBR(item.data)}</>
                           )}

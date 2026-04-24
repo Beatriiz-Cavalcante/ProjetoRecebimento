@@ -43,6 +43,7 @@ function CadastroRecebimentoPortaria({ onSubmit }) {
 
     setErros(novosErros);
 
+    // 🔹 se tiver erro, não envia
     if (Object.keys(novosErros).length > 0) return;
 
     const dados = {
@@ -53,9 +54,10 @@ function CadastroRecebimentoPortaria({ onSubmit }) {
       nome_motorista: nomeMotorista,
       cpf_motorista: cpfMotorista,
       placa_carro: placaCarro,
-      qt_notas: quantidadeNotas,
+      qt_notas: Number(quantidadeNotas),
     };
 
+    // 🔹 chama função do pai (PortariaPage)
     if (onSubmit) {
       onSubmit(dados);
     }
@@ -70,6 +72,7 @@ function CadastroRecebimentoPortaria({ onSubmit }) {
 
         <form onSubmit={handleSubmit}>
           <div className="row g-3">
+            {/* Fornecedor */}
             <div className="col-md-6">
               <label className="form-label fw-semibold">Fornecedor</label>
               <input
@@ -77,13 +80,13 @@ function CadastroRecebimentoPortaria({ onSubmit }) {
                 className={`form-control ${erros.fornecedor ? "is-invalid" : ""}`}
                 value={fornecedor}
                 onChange={(e) => setFornecedor(e.target.value)}
-                placeholder="Digite o fornecedor"
               />
               {erros.fornecedor && (
-                <div className="invalid-feedback">Campo obrigatório.</div>
+                <div className="invalid-feedback">Campo obrigatório</div>
               )}
             </div>
 
+            {/* Data */}
             <div className="col-md-3">
               <label className="form-label fw-semibold">Data</label>
               <input
@@ -93,10 +96,11 @@ function CadastroRecebimentoPortaria({ onSubmit }) {
                 onChange={(e) => setData(e.target.value)}
               />
               {erros.data && (
-                <div className="invalid-feedback">Campo obrigatório.</div>
+                <div className="invalid-feedback">Campo obrigatório</div>
               )}
             </div>
 
+            {/* Chegada */}
             <div className="col-md-3">
               <label className="form-label fw-semibold">Chegada na Rua</label>
               <input
@@ -106,10 +110,11 @@ function CadastroRecebimentoPortaria({ onSubmit }) {
                 onChange={(e) => setChegadaNaRua(e.target.value)}
               />
               {erros.chegadaNaRua && (
-                <div className="invalid-feedback">Campo obrigatório.</div>
+                <div className="invalid-feedback">Campo obrigatório</div>
               )}
             </div>
 
+            {/* Entrada */}
             <div className="col-md-3">
               <label className="form-label fw-semibold">Entrada no CD</label>
               <input
@@ -119,10 +124,11 @@ function CadastroRecebimentoPortaria({ onSubmit }) {
                 onChange={(e) => setEntradaNoCd(e.target.value)}
               />
               {erros.entradaNoCd && (
-                <div className="invalid-feedback">Campo obrigatório.</div>
+                <div className="invalid-feedback">Campo obrigatório</div>
               )}
             </div>
 
+            {/* Motorista */}
             <div className="col-md-5">
               <label className="form-label fw-semibold">Nome do Motorista</label>
               <input
@@ -130,53 +136,51 @@ function CadastroRecebimentoPortaria({ onSubmit }) {
                 className={`form-control ${erros.nomeMotorista ? "is-invalid" : ""}`}
                 value={nomeMotorista}
                 onChange={(e) => setNomeMotorista(e.target.value)}
-                placeholder="Digite o nome do motorista"
               />
               {erros.nomeMotorista && (
-                <div className="invalid-feedback">Campo obrigatório.</div>
+                <div className="invalid-feedback">Campo obrigatório</div>
               )}
             </div>
 
+            {/* CPF */}
             <div className="col-md-4">
-              <label className="form-label fw-semibold">CPF do Motorista</label>
+              <label className="form-label fw-semibold">CPF</label>
               <input
                 type="text"
                 className={`form-control ${erros.cpfMotorista ? "is-invalid" : ""}`}
                 value={cpfMotorista}
                 onChange={(e) => setCpfMotorista(e.target.value)}
-                placeholder="Digite o CPF"
               />
               {erros.cpfMotorista && (
-                <div className="invalid-feedback">Campo obrigatório.</div>
+                <div className="invalid-feedback">Campo obrigatório</div>
               )}
             </div>
 
+            {/* Placa */}
             <div className="col-md-3">
-              <label className="form-label fw-semibold">Placa do Carro</label>
+              <label className="form-label fw-semibold">Placa</label>
               <input
                 type="text"
                 className={`form-control ${erros.placaCarro ? "is-invalid" : ""}`}
                 value={placaCarro}
                 onChange={(e) => setPlacaCarro(e.target.value.toUpperCase())}
-                placeholder="ABC1D23"
               />
               {erros.placaCarro && (
-                <div className="invalid-feedback">Campo obrigatório.</div>
+                <div className="invalid-feedback">Campo obrigatório</div>
               )}
             </div>
 
+            {/* Notas */}
             <div className="col-md-3">
-              <label className="form-label fw-semibold">Quantidade de Notas</label>
+              <label className="form-label fw-semibold">Qtd Notas</label>
               <input
                 type="number"
-                min="0"
                 className={`form-control ${erros.quantidadeNotas ? "is-invalid" : ""}`}
                 value={quantidadeNotas}
                 onChange={(e) => setQuantidadeNotas(e.target.value)}
-                placeholder="0"
               />
               {erros.quantidadeNotas && (
-                <div className="invalid-feedback">Campo obrigatório.</div>
+                <div className="invalid-feedback">Campo obrigatório</div>
               )}
             </div>
           </div>

@@ -1,22 +1,33 @@
-const API_URL = "http://localhost:5000/operacoes";
+const API_URL = "http://127.0.0.1:5000/operacoes";
 
 export async function getRecebimentos() {
   const res = await fetch(API_URL);
+
+  if (!res.ok) {
+    throw new Error("Erro ao buscar recebimentos");
+  }
+
   return res.json();
 }
 
 export async function criarRecebimento(dados) {
-  await fetch(API_URL, {
+  const res = await fetch(API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(dados),
   });
+
+  if (!res.ok) {
+    throw new Error("Erro ao criar recebimento");
+  }
+
+  return res.json();
 }
 
 export async function atualizarRecebimento(id, payload) {
-  const response = await fetch(`http://127.0.0.1:5000/operacoes/${id}`, {
+  const response = await fetch(`${API_URL}/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",

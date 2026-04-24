@@ -427,7 +427,7 @@ function RecebimentoPage() {
       await carregar();
     } catch (error) {
       console.error("Erro ao salvar edição:", error);
-      alert("Erro ao salvar edição do registro.");
+      console.error("Erro ao salvar edição do registro.");
     }
   }
 
