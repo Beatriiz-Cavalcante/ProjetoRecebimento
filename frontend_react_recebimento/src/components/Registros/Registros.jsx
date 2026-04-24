@@ -1,7 +1,7 @@
 import "./Registros.css";
 
 function Registros({
-  lista,
+  lista = [],
   calcularStatusRegistro,
   getStatusStyle,
   formatarDataBR,
@@ -12,6 +12,7 @@ function Registros({
   handleChangeCampoRegistro,
   salvarEdicaoRegistro,
   handleChangeObservacaoManual,
+  mensagemEdicaoId,
 }) {
   return (
     <>
@@ -60,7 +61,11 @@ function Registros({
                                 className="form-control mt-1"
                                 value={item.data || ""}
                                 onChange={(e) =>
-                                  handleChangeCampoRegistro(item.id, "data", e.target.value)
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "data",
+                                    e.target.value
+                                  )
                                 }
                               />
                             </div>
@@ -353,7 +358,7 @@ function Registros({
                       </>
                     )}
 
-                    <div className="mt-3 d-flex gap-2 flex-wrap">
+                    <div className="mt-3 d-flex align-items-center gap-2 flex-wrap">
                       {emEdicao ? (
                         <>
                           <button
@@ -373,13 +378,21 @@ function Registros({
                           </button>
                         </>
                       ) : (
-                        <button
-                          type="button"
-                          className="btn btn-warning"
-                          onClick={() => iniciarEdicao(item.id)}
-                        >
-                          Editar
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            className="btn btn-warning"
+                            onClick={() => iniciarEdicao(item.id)}
+                          >
+                            Editar
+                          </button>
+
+                          {mensagemEdicaoId === item.id && (
+                            <span className="text-success fw-semibold">
+                              registro editado com sucesso
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

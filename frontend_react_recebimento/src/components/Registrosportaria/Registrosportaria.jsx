@@ -7,6 +7,7 @@ function Registrosportaria({
   cancelarEdicao,
   handleChangeCampoRegistro,
   salvarEdicaoRegistro,
+  mensagemEdicaoId,
 }) {
   function formatarDataBR(valor) {
     if (!valor) return "-";
@@ -47,7 +48,23 @@ function Registrosportaria({
         <div className="container-registros">
           <div className="d-flex flex-column gap-3">
             {registros.map((item) => {
-              const statusExibido = item.status || "PENDENTE";
+              const camposPortariaObrigatorios = [
+                item.nome_motorista,
+                item.cpf_motorista,
+                item.placa_carro,
+                item.qt_notas,
+                item.chegada_na_rua,
+                item.entrada_no_cd,
+              ];
+
+              const temCampoAusente = camposPortariaObrigatorios.some(
+                (valor) =>
+                  valor === null ||
+                  valor === undefined ||
+                  String(valor).trim() === ""
+              );
+
+              const statusExibido = temCampoAusente ? "PENDENTE" : "RESOLVIDO";
               const emEdicao = editandoId === item.id;
 
               return (
@@ -240,7 +257,7 @@ function Registrosportaria({
                       </div>
                     </div>
 
-                    <div className="mt-3 d-flex gap-2 flex-wrap">
+                    <div className="mt-3 d-flex align-items-center gap-2 flex-wrap">
                       {emEdicao ? (
                         <>
                           <button
@@ -260,19 +277,27 @@ function Registrosportaria({
                           </button>
                         </>
                       ) : (
-                        <button
-                          type="button"
-                          className="btn btn-warning"
-                          onClick={() => iniciarEdicao(item.id)}
-                        >
-                          Editar
-                        </button>
+                        <>
+                          <button
+                            type="button"
+                            className="btn btn-warning"
+                            onClick={() => iniciarEdicao(item.id)}
+                          >
+                            Editar
+                          </button>
+
+                          {mensagemEdicaoId === item.id && (
+                            <span className="text-success fw-semibold">
+                              registro editado com sucesso
+                            </span>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
                 </div>
               );
-            })}
+            })}''
           </div>
         </div>
       )}

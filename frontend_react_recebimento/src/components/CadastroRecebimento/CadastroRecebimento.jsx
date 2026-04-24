@@ -42,6 +42,7 @@ function CadastroRecebimento({
   setDescricao,
   setErros,
   listaRef,
+  mensagem,
 }) {
   return (
     <>
@@ -97,21 +98,17 @@ function CadastroRecebimento({
               className="form-control"
               type="time"
               value={chegadaNaRua}
-              onChange={(e) => {
-                setChegadaNaRua(e.target.value);
-              }}
-            />   
+              onChange={(e) => setChegadaNaRua(e.target.value)}
+            />
           </div>
 
           <div className="col-md-3 mb-3">
-            <label className="form-label">Entrada no CD </label>
+            <label className="form-label">Entrada no CD</label>
             <input
               className="form-control"
               type="time"
               value={entradaNoCd}
-              onChange={(e) => {
-                setEntradaNoCd(e.target.value);
-              }}
+              onChange={(e) => setEntradaNoCd(e.target.value)}
             />
           </div>
 
@@ -132,26 +129,22 @@ function CadastroRecebimento({
           </div>
 
           <div className="col-md-3 mb-3">
-            <label className="form-label">Horário Início </label>
+            <label className="form-label">Horário Início</label>
             <input
               className="form-control"
               type="time"
               value={horarioInicio}
-              onChange={(e) => {
-                setHorarioInicio(e.target.value);
-              }}
+              onChange={(e) => setHorarioInicio(e.target.value)}
             />
           </div>
 
           <div className="col-md-3 mb-3">
-            <label className="form-label">Horário Final </label>
+            <label className="form-label">Horário Final</label>
             <input
               className="form-control"
               type="time"
               value={horarioFinal}
-              onChange={(e) => {
-                setHorarioFinal(e.target.value);
-              }}
+              onChange={(e) => setHorarioFinal(e.target.value)}
             />
           </div>
 
@@ -161,24 +154,20 @@ function CadastroRecebimento({
               className="form-control"
               type="time"
               value={descontoHora}
-              onChange={(e) => {
-                setDescontoHora(e.target.value);
-              }}
+              onChange={(e) => setDescontoHora(e.target.value)}
             />
-            </div>
+          </div>
 
           <div className="col-md-3 mb-3">
-            <label className="form-label">Número Palet </label>
+            <label className="form-label">Número Palet</label>
             <input
               className="form-control"
               type="number"
               min="0"
               value={numeroPalet}
-              onChange={(e) => {
-                setNumeroPalet(e.target.value);
-              }}
+              onChange={(e) => setNumeroPalet(e.target.value)}
             />
-           </div>
+          </div>
 
           <div className="col-md-3 mb-3">
             <label className="form-label">Tipo Carga</label>
@@ -222,11 +211,9 @@ function CadastroRecebimento({
               type="number"
               min="0"
               value={numHomens}
-              onChange={(e) => {
-                setNumHomens(e.target.value);
-              }}
+              onChange={(e) => setNumHomens(e.target.value)}
             />
-           </div>
+          </div>
 
           <div className="col-md-3 mb-3">
             <label className="form-label">Avaria</label>
@@ -257,9 +244,9 @@ function CadastroRecebimento({
               rows="1"
               value={descricao}
               onChange={(e) => {
-              setDescricao(e.target.value);
-              e.target.style.height = "auto";
-              e.target.style.height = e.target.scrollHeight + "px";
+                setDescricao(e.target.value);
+                e.target.style.height = "auto";
+                e.target.style.height = e.target.scrollHeight + "px";
               }}
             />
           </div>
@@ -268,6 +255,12 @@ function CadastroRecebimento({
         <button className="btn btn-primary" type="submit">
           Enviar
         </button>
+
+        {mensagem && (
+          <div className="mt-2 text-success fw-semibold">
+            {mensagem}
+          </div>
+        )}
       </form>
     </>
   );

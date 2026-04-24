@@ -6,6 +6,19 @@ function PortariaPage() {
   const [registros, setRegistros] = useState([]);
   const [editandoId, setEditandoId] = useState(null);
 
+  const [mensagemCadastro, setMensagemCadastro] = useState("");
+  const [mensagemEdicaoId, setMensagemEdicaoId] = useState(null);
+
+  function mostrarMensagemCadastro(texto) {
+    setMensagemCadastro(texto);
+    setTimeout(() => setMensagemCadastro(""), 3000);
+  }
+
+  function mostrarMensagemEdicao(id) {
+    setMensagemEdicaoId(id);
+    setTimeout(() => setMensagemEdicaoId(null), 3000);
+  }
+
   async function carregarRegistros() {
     try {
       const resposta = await fetch("http://127.0.0.1:5000/operacoes");
@@ -41,6 +54,7 @@ function PortariaPage() {
       }
 
       await carregarRegistros();
+      mostrarMensagemCadastro("registro adicionado com sucesso");
     } catch (erro) {
       console.error("Erro ao salvar cadastro da portaria:", erro);
     }
@@ -48,6 +62,8 @@ function PortariaPage() {
 
   function iniciarEdicao(id) {
     setEditandoId(id);
+    setMensagemCadastro("");
+    setMensagemEdicaoId(null);
   }
 
   function cancelarEdicao() {
@@ -79,7 +95,9 @@ function PortariaPage() {
         cpf_motorista: item.cpf_motorista || null,
         placa_carro: item.placa_carro || null,
         qt_notas:
-          item.qt_notas === "" || item.qt_notas === null || item.qt_notas === undefined
+          item.qt_notas === "" ||
+          item.qt_notas === null ||
+          item.qt_notas === undefined
             ? null
             : Number(item.qt_notas),
       };
@@ -98,6 +116,7 @@ function PortariaPage() {
 
       setEditandoId(null);
       await carregarRegistros();
+      mostrarMensagemEdicao(item.id);
     } catch (erro) {
       console.error("Erro ao salvar edição da portaria:", erro);
     }
@@ -105,7 +124,10 @@ function PortariaPage() {
 
   return (
     <div className="container mt-4">
-      <CadastroRecebimentoPortaria onSubmit={salvarCadastroPortaria} />
+      <CadastroRecebimentoPortaria
+        onSubmit={salvarCadastroPortaria}
+        mensagem={mensagemCadastro}
+      />
 
       <RegistrosPortaria
         registros={registros}
@@ -114,6 +136,7 @@ function PortariaPage() {
         cancelarEdicao={cancelarEdicao}
         handleChangeCampoRegistro={handleChangeCampoRegistro}
         salvarEdicaoRegistro={salvarEdicaoRegistro}
+        mensagemEdicaoId={mensagemEdicaoId}
       />
     </div>
   );

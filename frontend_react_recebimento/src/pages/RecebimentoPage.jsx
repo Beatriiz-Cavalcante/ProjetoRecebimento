@@ -11,6 +11,9 @@ import Registros from "../components/Registros/Registros";
 function RecebimentoPage() {
   const [lista, setLista] = useState([]);
 
+  const [mensagemCadastro, setMensagemCadastro] = useState("");
+  const [mensagemEdicaoId, setMensagemEdicaoId] = useState(null);
+
   const [fornecedor, setFornecedor] = useState("");
   const [chegadaNaRua, setChegadaNaRua] = useState("");
   const [entradaNoCd, setEntradaNoCd] = useState("");
@@ -35,6 +38,16 @@ function RecebimentoPage() {
   const inputFornecedorRef = useRef(null);
   const inputChegadaRef = useRef(null);
   const listaRef = useRef(null);
+
+  function mostrarMensagemCadastro(texto) {
+    setMensagemCadastro(texto);
+    setTimeout(() => setMensagemCadastro(""), 3000);
+  }
+
+  function mostrarMensagemEdicao(id) {
+    setMensagemEdicaoId(id);
+    setTimeout(() => setMensagemEdicaoId(null), 3000);
+  }
 
   const fornecedores = [
     "ALVOAR",
@@ -119,16 +132,21 @@ function RecebimentoPage() {
     if (!valorPreenchido(item.nome_motorista)) faltando.push("Nome Motorista");
     if (!valorPreenchido(item.cpf_motorista)) faltando.push("CPF Motorista");
     if (!valorPreenchido(item.placa_carro)) faltando.push("Placa Carro");
+
     if (!valorPreenchido(item.qt_notas) && item.qt_notas !== 0) {
       faltando.push("Quantidade de Notas");
     }
+
     if (!valorPreenchido(item.horario_inicio)) faltando.push("Horário Início");
     if (!valorPreenchido(item.horario_final)) faltando.push("Horário Final");
     if (!valorPreenchido(item.desconto_hora)) faltando.push("Desconto Hora");
+
     if (!valorPreenchido(item.numero_palet) && item.numero_palet !== 0) {
       faltando.push("Número Palet");
     }
+
     if (!valorPreenchido(item.tipo_carga)) faltando.push("Tipo Carga");
+
     if (!valorPreenchido(item.num_homens) && item.num_homens !== 0) {
       faltando.push("Nº Homens");
     }
@@ -214,6 +232,7 @@ function RecebimentoPage() {
   useEffect(() => {
     if (listaRef.current && indiceAtivo >= 0) {
       const itemAtivo = listaRef.current.children[indiceAtivo];
+
       if (itemAtivo) {
         itemAtivo.scrollIntoView({ block: "nearest" });
       }
@@ -275,6 +294,7 @@ function RecebimentoPage() {
       limparFormulario();
       setErros({});
       await carregar();
+      mostrarMensagemCadastro("registro adicionado com sucesso");
       inputFornecedorRef.current?.focus();
     } catch (error) {
       console.error("Erro ao salvar recebimento:", error);
@@ -361,6 +381,8 @@ function RecebimentoPage() {
 
   function iniciarEdicao(id) {
     setEditandoId(id);
+    setMensagemCadastro("");
+    setMensagemEdicaoId(null);
   }
 
   function cancelarEdicao() {
@@ -392,7 +414,9 @@ function RecebimentoPage() {
         cpf_motorista: item.cpf_motorista || null,
         placa_carro: item.placa_carro || null,
         qt_notas:
-          item.qt_notas === "" || item.qt_notas === null || item.qt_notas === undefined
+          item.qt_notas === "" ||
+          item.qt_notas === null ||
+          item.qt_notas === undefined
             ? null
             : Number(item.qt_notas),
         horario_inicio: item.horario_inicio || null,
@@ -425,9 +449,9 @@ function RecebimentoPage() {
 
       setEditandoId(null);
       await carregar();
+      mostrarMensagemEdicao(item.id);
     } catch (error) {
       console.error("Erro ao salvar edição:", error);
-      console.error("Erro ao salvar edição do registro.");
     }
   }
 
@@ -483,6 +507,7 @@ function RecebimentoPage() {
         setDescricao={setDescricao}
         setErros={setErros}
         listaRef={listaRef}
+        mensagem={mensagemCadastro}
       />
 
       <Registros
@@ -497,6 +522,7 @@ function RecebimentoPage() {
         handleChangeCampoRegistro={handleChangeCampoRegistro}
         salvarEdicaoRegistro={salvarEdicaoRegistro}
         handleChangeObservacaoManual={handleChangeObservacaoManual}
+        mensagemEdicaoId={mensagemEdicaoId}
       />
     </>
   );
