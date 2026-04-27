@@ -81,7 +81,7 @@ docker exec -it logistica_postgres psql -U postgres -d logistica_teste
 ---
 ### 3. Backend
 
-### 🔹 3.1 Criar o ambiente virtual
+### 🔹 3.1 Criar o ambiente virtual (só na primeira vez que rodar o projeto)
 
 ```bash
 python -m venv venv
@@ -98,10 +98,10 @@ python -m venv venv
 cd backend
 ```
 
-#### 🔹 3.4 Instalar as dependências na pasta do backend
+#### 🔹 3.4 Instalar as dependências na pasta do backend (só na primeira vez que rodar o projeto)
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt 
 ```
 
 #### 🔹 3.5 Rodar a API
@@ -127,7 +127,7 @@ pip freeze > requirements.txt
 cd frontend_react_recebimento
 ```
 
-###🔹 3.2. Instalar dependências
+###🔹 3.2. Instalar dependências (só na primeira vez que rodar o projeto)
 
 ```bash
 npm install
