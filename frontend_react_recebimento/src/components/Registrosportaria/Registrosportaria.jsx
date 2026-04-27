@@ -1,6 +1,6 @@
-import "./Registrosportaria.css";
+import "./RegistrosPortaria.css";
 
-function Registrosportaria({
+function RegistrosPortaria({
   registros = [],
   editandoId,
   iniciarEdicao,
@@ -20,6 +20,54 @@ function Registrosportaria({
     }
 
     return valor;
+  }
+
+  function formatarHora(valor) {
+    if (!valor) return "";
+    return String(valor).slice(0, 5);
+  }
+
+  function validarCPF(cpf) {
+    cpf = String(cpf || "").replace(/\D/g, "");
+
+    if (cpf.length !== 11) return false;
+    if (/^(\d)\1+$/.test(cpf)) return false;
+
+    let soma = 0;
+    let resto;
+
+    for (let i = 1; i <= 9; i++) {
+      soma += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+    }
+
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+    if (resto !== parseInt(cpf.substring(9, 10))) return false;
+
+    soma = 0;
+
+    for (let i = 1; i <= 10; i++) {
+      soma += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+    }
+
+    resto = (soma * 10) % 11;
+    if (resto === 10 || resto === 11) resto = 0;
+
+    return resto === parseInt(cpf.substring(10, 11));
+  }
+
+  function salvarComValidacao(item) {
+    if (!validarCPF(item.cpf_motorista)) {
+      alert("CPF inválido. Verifique o CPF antes de salvar.");
+      return;
+    }
+
+    const itemAjustado = {
+      ...item,
+      cpf_motorista: String(item.cpf_motorista || "").replace(/\D/g, ""),
+    };
+
+    salvarEdicaoRegistro(itemAjustado);
   }
 
   function getStatusStyle(status) {
@@ -48,24 +96,12 @@ function Registrosportaria({
         <div className="container-registros">
           <div className="d-flex flex-column gap-3">
             {registros.map((item) => {
-              const camposPortariaObrigatorios = [
-                item.nome_motorista,
-                item.cpf_motorista,
-                item.placa_carro,
-                item.qt_notas,
-                item.chegada_na_rua,
-                item.entrada_no_cd,
-              ];
-
-              const temCampoAusente = camposPortariaObrigatorios.some(
-                (valor) =>
-                  valor === null ||
-                  valor === undefined ||
-                  String(valor).trim() === ""
-              );
-
-              const statusExibido = temCampoAusente ? "PENDENTE" : "RESOLVIDO";
+              const statusExibido = item.status_portaria || "PENDENTE";
               const emEdicao = editandoId === item.id;
+              const cpfInvalido =
+                emEdicao &&
+                item.cpf_motorista &&
+                !validarCPF(item.cpf_motorista);
 
               return (
                 <div key={item.id} className="card shadow-sm registro-card">
@@ -150,18 +186,29 @@ function Registrosportaria({
                         <div className="border rounded p-2 h-100 bg-light">
                           <strong>CPF Motorista:</strong>
                           {emEdicao ? (
-                            <input
-                              type="text"
-                              className="form-control mt-1"
-                              value={item.cpf_motorista || ""}
-                              onChange={(e) =>
-                                handleChangeCampoRegistro(
-                                  item.id,
-                                  "cpf_motorista",
-                                  e.target.value
-                                )
-                              }
-                            />
+                            <>
+                              <input
+                                type="text"
+                                className={`form-control mt-1 ${
+                                  cpfInvalido ? "is-invalid" : ""
+                                }`}
+                                value={item.cpf_motorista || ""}
+                                maxLength={14}
+                                onChange={(e) =>
+                                  handleChangeCampoRegistro(
+                                    item.id,
+                                    "cpf_motorista",
+                                    e.target.value
+                                  )
+                                }
+                              />
+
+                              {cpfInvalido && (
+                                <div className="invalid-feedback d-block">
+                                  CPF inválido
+                                </div>
+                              )}
+                            </>
                           ) : (
                             <div>{item.cpf_motorista || "-"}</div>
                           )}
@@ -219,7 +266,7 @@ function Registrosportaria({
                             <input
                               type="time"
                               className="form-control mt-1"
-                              value={item.chegada_na_rua || ""}
+                              value={formatarHora(item.chegada_na_rua)}
                               onChange={(e) =>
                                 handleChangeCampoRegistro(
                                   item.id,
@@ -229,7 +276,7 @@ function Registrosportaria({
                               }
                             />
                           ) : (
-                            <div>{item.chegada_na_rua || "-"}</div>
+                            <div>{formatarHora(item.chegada_na_rua) || "-"}</div>
                           )}
                         </div>
                       </div>
@@ -241,7 +288,7 @@ function Registrosportaria({
                             <input
                               type="time"
                               className="form-control mt-1"
-                              value={item.entrada_no_cd || ""}
+                              value={formatarHora(item.entrada_no_cd)}
                               onChange={(e) =>
                                 handleChangeCampoRegistro(
                                   item.id,
@@ -251,8 +298,59 @@ function Registrosportaria({
                               }
                             />
                           ) : (
-                            <div>{item.entrada_no_cd || "-"}</div>
+                            <div>{formatarHora(item.entrada_no_cd) || "-"}</div>
                           )}
+                        </div>
+                      </div>
+
+                      <div className="col-md-3">
+                        <div className="border rounded p-2 h-100 bg-light">
+                          <strong>Horário Saída:</strong>
+                          {emEdicao ? (
+                            <input
+                              type="time"
+                              className="form-control mt-1"
+                              value={formatarHora(item.horario_saida)}
+                              onChange={(e) =>
+                                handleChangeCampoRegistro(
+                                  item.id,
+                                  "horario_saida",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          ) : (
+                            <div>{formatarHora(item.horario_saida) || "-"}</div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="col-md-6">
+                        <div className="border rounded p-2 h-100 bg-light">
+                          <strong>Observação Portaria:</strong>
+                          {emEdicao ? (
+                            <textarea
+                              className="form-control mt-1"
+                              rows="2"
+                              value={item.observacao_portaria || ""}
+                              onChange={(e) =>
+                                handleChangeCampoRegistro(
+                                  item.id,
+                                  "observacao_portaria",
+                                  e.target.value
+                                )
+                              }
+                            />
+                          ) : (
+                            <div>{item.observacao_portaria || "-"}</div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="col-md-6">
+                        <div className="border rounded p-2 h-100 bg-light">
+                          <strong>Observação Status Portaria:</strong>
+                          <div>{item.observacao_status_portaria || "-"}</div>
                         </div>
                       </div>
                     </div>
@@ -263,7 +361,8 @@ function Registrosportaria({
                           <button
                             type="button"
                             className="btn btn-success"
-                            onClick={() => salvarEdicaoRegistro(item)}
+                            onClick={() => salvarComValidacao(item)}
+                            disabled={cpfInvalido}
                           >
                             Salvar
                           </button>
@@ -297,7 +396,7 @@ function Registrosportaria({
                   </div>
                 </div>
               );
-            })}''
+            })}
           </div>
         </div>
       )}
@@ -305,4 +404,4 @@ function Registrosportaria({
   );
 }
 
-export default Registrosportaria;
+export default RegistrosPortaria;

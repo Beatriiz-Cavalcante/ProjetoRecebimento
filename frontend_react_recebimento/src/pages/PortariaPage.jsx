@@ -41,12 +41,30 @@ function PortariaPage() {
 
   async function salvarCadastroPortaria(dados) {
     try {
+      const payload = {
+        fornecedor: dados.fornecedor || null,
+        data: dados.data || null,
+        chegada_na_rua: dados.chegada_na_rua || null,
+        entrada_no_cd: dados.entrada_no_cd || null,
+        horario_saida: dados.horario_saida || null,
+        nome_motorista: dados.nome_motorista || null,
+        cpf_motorista: dados.cpf_motorista || null,
+        placa_carro: dados.placa_carro || null,
+        qt_notas:
+          dados.qt_notas === "" ||
+          dados.qt_notas === null ||
+          dados.qt_notas === undefined
+            ? null
+            : Number(dados.qt_notas),
+        observacao_portaria: dados.observacao_portaria || "",
+      };
+
       const resposta = await fetch("http://127.0.0.1:5000/operacoes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(dados),
+        body: JSON.stringify(payload),
       });
 
       if (!resposta.ok) {
@@ -91,6 +109,7 @@ function PortariaPage() {
         data: item.data || null,
         chegada_na_rua: item.chegada_na_rua || null,
         entrada_no_cd: item.entrada_no_cd || null,
+        horario_saida: item.horario_saida || null,
         nome_motorista: item.nome_motorista || null,
         cpf_motorista: item.cpf_motorista || null,
         placa_carro: item.placa_carro || null,
@@ -100,15 +119,19 @@ function PortariaPage() {
           item.qt_notas === undefined
             ? null
             : Number(item.qt_notas),
+        observacao_portaria: item.observacao_portaria || "",
       };
 
-      const resposta = await fetch(`http://127.0.0.1:5000/operacoes/${item.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const resposta = await fetch(
+        `http://127.0.0.1:5000/operacoes/portaria/${item.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!resposta.ok) {
         throw new Error("Erro ao atualizar cadastro");

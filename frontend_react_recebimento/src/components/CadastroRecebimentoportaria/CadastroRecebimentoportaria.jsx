@@ -5,11 +5,13 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
   const [data, setData] = useState("");
   const [chegadaNaRua, setChegadaNaRua] = useState("");
   const [entradaNoCd, setEntradaNoCd] = useState("");
+  const [horarioSaida, setHorarioSaida] = useState("");
 
   const [nomeMotorista, setNomeMotorista] = useState("");
   const [cpfMotorista, setCpfMotorista] = useState("");
   const [placaCarro, setPlacaCarro] = useState("");
   const [quantidadeNotas, setQuantidadeNotas] = useState("");
+  const [observacaoPortaria, setObservacaoPortaria] = useState("");
 
   const [erros, setErros] = useState({});
   const [abrirLista, setAbrirLista] = useState(false);
@@ -67,6 +69,58 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
     item.toLowerCase().includes(fornecedor.toLowerCase())
   );
 
+  function validarCPF(cpf) {
+    cpf = String(cpf || "").replace(/\D/g, "");
+
+    if (cpf.length !== 11) return false;
+    if (/^(\d)\1+$/.test(cpf)) return false;
+
+    let soma = 0;
+    let resto;
+
+    for (let i = 1; i <= 9; i++) {
+      soma += parseInt(cpf.substring(i - 1, i), 10) * (11 - i);
+    }
+
+    resto = (soma * 10) % 11;
+
+    if (resto === 10 || resto === 11) {
+      resto = 0;
+    }
+
+    if (resto !== parseInt(cpf.substring(9, 10), 10)) {
+      return false;
+    }
+
+    soma = 0;
+
+    for (let i = 1; i <= 10; i++) {
+      soma += parseInt(cpf.substring(i - 1, i), 10) * (12 - i);
+    }
+
+    resto = (soma * 10) % 11;
+
+    if (resto === 10 || resto === 11) {
+      resto = 0;
+    }
+
+    return resto === parseInt(cpf.substring(10, 11), 10);
+  }
+
+  function salvarComValidacao(item) {
+    if (!validarCPF(item.cpf_motorista)) {
+      alert("CPF inválido. Verifique o CPF antes de salvar.");
+      return;
+    }
+
+    const itemAjustado = {
+      ...item,
+      cpf_motorista: String(item.cpf_motorista || "").replace(/\D/g, ""),
+    };
+
+    salvarEdicaoRegistro(itemAjustado);
+  }
+
   useEffect(() => {
     function handleClickFora(event) {
       if (
@@ -79,7 +133,10 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
     }
 
     document.addEventListener("mousedown", handleClickFora);
-    return () => document.removeEventListener("mousedown", handleClickFora);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickFora);
+    };
   }, []);
 
   useEffect(() => {
@@ -96,7 +153,7 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
     setFornecedor(nome);
     setAbrirLista(false);
     setIndiceAtivo(-1);
-    setErros((prev) => ({ ...prev, fornecedor: false }));
+    setErros((prev) => ({ ...prev, fornecedor: "" }));
     inputDataRef.current?.focus();
   }
 
@@ -110,6 +167,7 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
         setIndiceAtivo(-1);
         e.preventDefault();
       }
+
       return;
     }
 
@@ -119,14 +177,18 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
+
       if (total === 0) return;
+
       setIndiceAtivo((prev) => (prev < total - 1 ? prev + 1 : 0));
       return;
     }
 
     if (e.key === "ArrowUp") {
       e.preventDefault();
+
       if (total === 0) return;
+
       setIndiceAtivo((prev) => (prev > 0 ? prev - 1 : total - 1));
       return;
     }
@@ -136,6 +198,7 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
         e.preventDefault();
         selecionarFornecedor(fornecedoresFiltrados[indiceAtivo]);
       }
+
       return;
     }
 
@@ -157,10 +220,12 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
     setData("");
     setChegadaNaRua("");
     setEntradaNoCd("");
+    setHorarioSaida("");
     setNomeMotorista("");
     setCpfMotorista("");
     setPlacaCarro("");
     setQuantidadeNotas("");
+    setObservacaoPortaria("");
     setErros({});
     setAbrirLista(false);
     setIndiceAtivo(-1);
@@ -172,30 +237,53 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
 
     const novosErros = {};
 
-    if (!fornecedor.trim()) novosErros.fornecedor = true;
-    if (!data) novosErros.data = true;
-    if (!chegadaNaRua) novosErros.chegadaNaRua = true;
-    if (!entradaNoCd) novosErros.entradaNoCd = true;
-    if (!nomeMotorista.trim()) novosErros.nomeMotorista = true;
-    if (!cpfMotorista.trim()) novosErros.cpfMotorista = true;
-    if (!placaCarro.trim()) novosErros.placaCarro = true;
+    if (!fornecedor.trim()) {
+      novosErros.fornecedor = "Campo obrigatório";
+    }
+
+    if (!data) {
+      novosErros.data = "Campo obrigatório";
+    }
+
+    if (!chegadaNaRua) {
+      novosErros.chegadaNaRua = "Campo obrigatório";
+    }
+
+    if (!nomeMotorista.trim()) {
+      novosErros.nomeMotorista = "Campo obrigatório";
+    }
+
+    if (!cpfMotorista.trim()) {
+      novosErros.cpfMotorista = "Campo obrigatório";
+    } else if (!validarCPF(cpfMotorista)) {
+      novosErros.cpfMotorista = "CPF inválido";
+    }
+
+    if (!placaCarro.trim()) {
+      novosErros.placaCarro = "Campo obrigatório";
+    }
+
     if (quantidadeNotas === "" || quantidadeNotas === null) {
-      novosErros.quantidadeNotas = true;
+      novosErros.quantidadeNotas = "Campo obrigatório";
     }
 
     setErros(novosErros);
 
-    if (Object.keys(novosErros).length > 0) return;
+    if (Object.keys(novosErros).length > 0) {
+      return;
+    }
 
     const dados = {
       fornecedor,
       data,
       chegada_na_rua: chegadaNaRua,
       entrada_no_cd: entradaNoCd,
+      horario_saida: horarioSaida,
       nome_motorista: nomeMotorista,
-      cpf_motorista: cpfMotorista,
+      cpf_motorista: cpfMotorista.replace(/\D/g, ""),
       placa_carro: placaCarro,
       qt_notas: Number(quantidadeNotas),
+      observacao_portaria: observacaoPortaria,
     };
 
     if (onSubmit) {
@@ -221,14 +309,16 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
               <input
                 ref={inputFornecedorRef}
                 type="text"
-                className={`form-control ${erros.fornecedor ? "is-invalid" : ""}`}
+                className={`form-control ${
+                  erros.fornecedor ? "is-invalid" : ""
+                }`}
                 value={fornecedor}
                 onFocus={() => setAbrirLista(true)}
                 onChange={(e) => {
                   setFornecedor(e.target.value);
                   setAbrirLista(true);
                   setIndiceAtivo(-1);
-                  setErros((prev) => ({ ...prev, fornecedor: false }));
+                  setErros((prev) => ({ ...prev, fornecedor: "" }));
                 }}
                 onKeyDown={handleKeyDownFornecedor}
                 autoComplete="off"
@@ -254,7 +344,7 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
 
               {erros.fornecedor && (
                 <div className="invalid-feedback d-block">
-                  Campo obrigatório
+                  {erros.fornecedor}
                 </div>
               )}
             </div>
@@ -268,11 +358,12 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
                 value={data}
                 onChange={(e) => {
                   setData(e.target.value);
-                  setErros((prev) => ({ ...prev, data: false }));
+                  setErros((prev) => ({ ...prev, data: "" }));
                 }}
               />
+
               {erros.data && (
-                <div className="invalid-feedback">Campo obrigatório</div>
+                <div className="invalid-feedback">{erros.data}</div>
               )}
             </div>
 
@@ -286,30 +377,37 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
                 value={chegadaNaRua}
                 onChange={(e) => {
                   setChegadaNaRua(e.target.value);
-                  setErros((prev) => ({ ...prev, chegadaNaRua: false }));
+                  setErros((prev) => ({ ...prev, chegadaNaRua: "" }));
                 }}
               />
+
               {erros.chegadaNaRua && (
-                <div className="invalid-feedback">Campo obrigatório</div>
+                <div className="invalid-feedback">{erros.chegadaNaRua}</div>
               )}
             </div>
 
             <div className="col-md-3">
-              <label className="form-label fw-semibold">Entrada no CD</label>
+              <label className="form-label fw-semibold">Entrada no CD </label>
               <input
                 type="time"
-                className={`form-control ${
-                  erros.entradaNoCd ? "is-invalid" : ""
-                }`}
+                className="form-control"
                 value={entradaNoCd}
                 onChange={(e) => {
                   setEntradaNoCd(e.target.value);
-                  setErros((prev) => ({ ...prev, entradaNoCd: false }));
                 }}
               />
-              {erros.entradaNoCd && (
-                <div className="invalid-feedback">Campo obrigatório</div>
-              )}
+            </div>
+
+            <div className="col-md-3">
+              <label className="form-label fw-semibold">Horário Saída </label>
+              <input
+                type="time"
+                className="form-control"
+                value={horarioSaida}
+                onChange={(e) => {
+                  setHorarioSaida(e.target.value);
+                }}
+              />
             </div>
 
             <div className="col-md-5">
@@ -322,29 +420,51 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
                 value={nomeMotorista}
                 onChange={(e) => {
                   setNomeMotorista(e.target.value);
-                  setErros((prev) => ({ ...prev, nomeMotorista: false }));
+                  setErros((prev) => ({ ...prev, nomeMotorista: "" }));
                 }}
               />
+
               {erros.nomeMotorista && (
-                <div className="invalid-feedback">Campo obrigatório</div>
+                <div className="invalid-feedback">{erros.nomeMotorista}</div>
               )}
             </div>
 
             <div className="col-md-4">
               <label className="form-label fw-semibold">CPF</label>
+
               <input
                 type="text"
                 className={`form-control ${
                   erros.cpfMotorista ? "is-invalid" : ""
                 }`}
                 value={cpfMotorista}
+                maxLength={14}
                 onChange={(e) => {
                   setCpfMotorista(e.target.value);
-                  setErros((prev) => ({ ...prev, cpfMotorista: false }));
+                  setErros((prev) => ({ ...prev, cpfMotorista: "" }));
+                }}
+                onBlur={() => {
+                  if (!cpfMotorista.trim()) {
+                    setErros((prev) => ({
+                      ...prev,
+                      cpfMotorista: "Campo obrigatório",
+                    }));
+                    return;
+                  }
+
+                  if (!validarCPF(cpfMotorista)) {
+                    setErros((prev) => ({
+                      ...prev,
+                      cpfMotorista: "CPF inválido",
+                    }));
+                  }
                 }}
               />
+
               {erros.cpfMotorista && (
-                <div className="invalid-feedback">Campo obrigatório</div>
+                <div className="invalid-feedback d-block">
+                  {erros.cpfMotorista}
+                </div>
               )}
             </div>
 
@@ -356,13 +476,15 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
                   erros.placaCarro ? "is-invalid" : ""
                 }`}
                 value={placaCarro}
+                maxLength={7}
                 onChange={(e) => {
                   setPlacaCarro(e.target.value.toUpperCase());
-                  setErros((prev) => ({ ...prev, placaCarro: false }));
+                  setErros((prev) => ({ ...prev, placaCarro: "" }));
                 }}
               />
+
               {erros.placaCarro && (
-                <div className="invalid-feedback">Campo obrigatório</div>
+                <div className="invalid-feedback">{erros.placaCarro}</div>
               )}
             </div>
 
@@ -377,12 +499,28 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
                 value={quantidadeNotas}
                 onChange={(e) => {
                   setQuantidadeNotas(e.target.value);
-                  setErros((prev) => ({ ...prev, quantidadeNotas: false }));
+                  setErros((prev) => ({ ...prev, quantidadeNotas: "" }));
                 }}
               />
+
               {erros.quantidadeNotas && (
-                <div className="invalid-feedback">Campo obrigatório</div>
+                <div className="invalid-feedback">
+                  {erros.quantidadeNotas}
+                </div>
               )}
+            </div>
+
+            <div className="col-md-12">
+              <label className="form-label fw-semibold">
+                Observação Portaria
+              </label>
+              <textarea
+                className="form-control"
+                rows="2"
+                value={observacaoPortaria}
+                onChange={(e) => setObservacaoPortaria(e.target.value)}
+                placeholder="Digite uma observação da portaria"
+              />
             </div>
           </div>
 
@@ -401,9 +539,7 @@ function CadastroRecebimentoPortaria({ onSubmit, mensagem }) {
           </div>
 
           {mensagem && (
-            <div className="mt-2 text-success fw-semibold">
-              {mensagem}
-            </div>
+            <div className="mt-2 text-success fw-semibold">{mensagem}</div>
           )}
         </form>
       </div>
