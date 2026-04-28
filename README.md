@@ -145,14 +145,24 @@ npm run dev
 
 ## 📌 Rotas da API (exemplo)
 
-| Método | Rota                   | Descrição          |
-| ------ | ---------              | -------------------|
-| GET    | /                      | Teste da API       |
-| GET    | /operacoes             | Listar operações   |
-| POST   | /operacoes             | Criar operação     |
-| PUT    | /operacoes/{id}        | Atualizar operação |
-| PUT    | /operacoes/{id}/status | Atualizar status   |
-| DELETE | /operacoes/{id}        | Remover (inativar) |
+| Método | Rota                              | Descrição                          |
+| ------ | --------------------------------- | ---------------------------------- |
+| GET    | /                                 | Teste da API                       |
+
+| POST   | /login                            | Realizar login                     |
+| POST   | /usuarios                         | Criar usuário                      |
+| GET    | /usuarios                         | Listar usuários (ADM)              |
+| GET    | /usuarios/{id}                    | Buscar usuário por ID (ADM)        |
+| PUT    | /usuarios/{id}                    | Atualizar usuário (ADM)            |
+| PUT    | /usuarios/{id}/inativar           | Inativar usuário (ADM)             |
+| PUT    | /usuarios/{id}/reativar           | Reativar usuário (ADM)             |
+| POST   | /recuperar-senha                  | Solicitar recuperação de senha     |
+
+| POST   | /operacoes                        | Criar operação                     |
+| GET    | /operacoes                        | Listar operações                   |
+| PUT    | /operacoes/portaria/{id}          | Atualizar dados da portaria        |
+| PUT    | /operacoes/recebimento/{id}       | Atualizar dados do recebimento     |
+| DELETE | /operacoes/{id}                   | Remover (inativar) operação        |
 
 
 ---
