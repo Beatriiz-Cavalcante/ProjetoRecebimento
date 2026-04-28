@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import CadastroRecebimentoPortaria from "../components/CadastroRecebimentoportaria/CadastroRecebimentoportaria";
-import RegistrosPortaria from "../components/Registrosportaria/Registrosportaria";
+import CadastroRecebimentoPortaria from "../../components/CadastroRecebimentoportaria/CadastroRecebimentoPortaria";
+import RegistrosPortaria from "../../components/Registrosportaria/RegistrosPortaria";
 
 function PortariaPage() {
   const [registros, setRegistros] = useState([]);

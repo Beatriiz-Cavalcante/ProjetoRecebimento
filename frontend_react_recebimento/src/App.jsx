@@ -1,29 +1,29 @@
 import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
 import "./Appcss.css";
 
-import RecebimentoPage from "./pages/RecebimentoPage";
-import PortariaPage from "./pages/PortariaPage";
+import LoginPage from "./pages/Login/LoginPage";
+import CadastroUsuarioPage from "./pages/CadastroUsuario/CadastroUsuarioPage";
+import RecuperarSenhaPage from "./pages/RecuperarSenha/RecuperarSenhaPage";
+
+import RecebimentoPage from "./pages/Recebimento/RecebimentoPage";
+import PortariaPage from "./pages/Portaria/PortariaPage";
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="container mt-4">
-        <div className="mb-4 d-flex gap-2">
-          <Link to="/recebimento" className="btn btn-primary">
-            Recebimento
-          </Link>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
 
-          <Link to="/portaria" className="btn btn-secondary">
-            Portaria
-          </Link>
-        </div>
+        <Route path="/cadastro-usuario" element={<CadastroUsuarioPage />} />
 
-        <Routes>
-          <Route path="/" element={<Navigate to="/recebimento" />} />
-          <Route path="/recebimento" element={<RecebimentoPage />} />
-          <Route path="/portaria" element={<PortariaPage />} />
-        </Routes>
-      </div>
+        <Route path="/recuperar-senha" element={<RecuperarSenhaPage />} />
+
+        <Route path="/recebimento" element={<RecebimentoPage />} />
+
+        <Route path="/portaria" element={<PortariaPage />} />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }

@@ -3,10 +3,11 @@ import {
   getRecebimentos,
   criarRecebimento,
   atualizarRecebimento,
-} from "../services/api";
+} from "../../services/api";
 
-import CadastroRecebimento from "../components/CadastroRecebimento/CadastroRecebimento";
-import Registros from "../components/Registros/Registros";
+import CadastroRecebimento from "../../components/CadastroRecebimento/CadastroRecebimento";
+import Registros from "../../components/Registros/Registros";
+import "./RecebimentoPage.css";
 
 function RecebimentoPage() {
   const [lista, setLista] = useState([]);
@@ -103,13 +104,7 @@ function RecebimentoPage() {
   function calcularStatusRegistro(item) {
     const camposObrigatorios = [
       item.fornecedor,
-      item.chegada_na_rua,
-      item.entrada_no_cd,
       item.data,
-      item.nome_motorista,
-      item.cpf_motorista,
-      item.placa_carro,
-      item.qt_notas,
       item.horario_inicio,
       item.horario_final,
       item.desconto_hora,
@@ -126,17 +121,7 @@ function RecebimentoPage() {
     const faltando = [];
 
     if (!valorPreenchido(item.fornecedor)) faltando.push("Fornecedor");
-    if (!valorPreenchido(item.chegada_na_rua)) faltando.push("Chegada na Rua");
-    if (!valorPreenchido(item.entrada_no_cd)) faltando.push("Entrada no CD");
     if (!valorPreenchido(item.data)) faltando.push("Data");
-    if (!valorPreenchido(item.nome_motorista)) faltando.push("Nome Motorista");
-    if (!valorPreenchido(item.cpf_motorista)) faltando.push("CPF Motorista");
-    if (!valorPreenchido(item.placa_carro)) faltando.push("Placa Carro");
-
-    if (!valorPreenchido(item.qt_notas) && item.qt_notas !== 0) {
-      faltando.push("Quantidade de Notas");
-    }
-
     if (!valorPreenchido(item.horario_inicio)) faltando.push("Horário Início");
     if (!valorPreenchido(item.horario_final)) faltando.push("Horário Final");
     if (!valorPreenchido(item.desconto_hora)) faltando.push("Desconto Hora");
@@ -155,7 +140,7 @@ function RecebimentoPage() {
       return `Faltando preencher: ${faltando.join(", ")}`;
     }
 
-    return "Registro preenchido corretamente.";
+    return "Recebimento preenchido corretamente.";
   }
 
   function enriquecerLista(dados) {
@@ -170,7 +155,9 @@ function RecebimentoPage() {
       cpf_motorista: item.cpf_motorista || "",
       placa_carro: item.placa_carro || "",
       qt_notas:
-        item.qt_notas === null || item.qt_notas === undefined ? "" : item.qt_notas,
+        item.qt_notas === null || item.qt_notas === undefined
+          ? ""
+          : item.qt_notas,
     }));
   }
 
@@ -434,7 +421,9 @@ function RecebimentoPage() {
         avaria:
           item.avaria === "" || item.avaria === null ? 0 : Number(item.avaria),
         volumes:
-          item.volumes === "" || item.volumes === null ? 0 : Number(item.volumes),
+          item.volumes === "" || item.volumes === null
+            ? 0
+            : Number(item.volumes),
         descricao: item.descricao || "",
         observacao_manual: item.observacao_manual || "",
       };
@@ -464,7 +453,7 @@ function RecebimentoPage() {
   }
 
   return (
-    <>
+    <div className="recebimento-page">
       <CadastroRecebimento
         handleSubmit={handleSubmit}
         erros={erros}
@@ -524,7 +513,7 @@ function RecebimentoPage() {
         handleChangeObservacaoManual={handleChangeObservacaoManual}
         mensagemEdicaoId={mensagemEdicaoId}
       />
-    </>
+    </div>
   );
 }
 
