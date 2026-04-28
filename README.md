@@ -148,7 +148,6 @@ npm run dev
 | Método | Rota                              | Descrição                          |
 | ------ | --------------------------------- | ---------------------------------- |
 | GET    | /                                 | Teste da API                       |
-
 | POST   | /login                            | Realizar login                     |
 | POST   | /usuarios                         | Criar usuário                      |
 | GET    | /usuarios                         | Listar usuários (ADM)              |
