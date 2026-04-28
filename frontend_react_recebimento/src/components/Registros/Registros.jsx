@@ -389,7 +389,7 @@ function Registros({
 
                           {mensagemEdicaoId === item.id && (
                             <span className="text-success fw-semibold">
-                              registro editado com sucesso
+                              REGRISTRO EDITADO COM SUCESSO
                             </span>
                           )}
                         </>

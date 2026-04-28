@@ -387,7 +387,7 @@ function RegistrosPortaria({
 
                           {mensagemEdicaoId === item.id && (
                             <span className="text-success fw-semibold">
-                              registro editado com sucesso
+                              REGISTRO EDITADO COM SUCESSO
                             </span>
                           )}
                         </>

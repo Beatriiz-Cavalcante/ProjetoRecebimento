@@ -281,7 +281,7 @@ function RecebimentoPage() {
       limparFormulario();
       setErros({});
       await carregar();
-      mostrarMensagemCadastro("registro adicionado com sucesso");
+      mostrarMensagemCadastro("REGISTRO ADICIONADO COM SUCESSO");
       inputFornecedorRef.current?.focus();
     } catch (error) {
       console.error("Erro ao salvar recebimento:", error);

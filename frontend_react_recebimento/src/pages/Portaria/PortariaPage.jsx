@@ -72,7 +72,7 @@ function PortariaPage() {
       }
 
       await carregarRegistros();
-      mostrarMensagemCadastro("registro adicionado com sucesso");
+      mostrarMensagemCadastro("REGISTRO ADICIONADO COM SUCESSO");
     } catch (erro) {
       console.error("Erro ao salvar cadastro da portaria:", erro);
     }
