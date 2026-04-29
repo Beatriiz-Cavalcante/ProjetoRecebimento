@@ -492,11 +492,34 @@ def recuperar_senha():
         data = request.json or {}
         email = data.get("email")
 
+        # 🔴 1. Validação obrigatória
         if not valor_preenchido(email):
             return jsonify({"erro": "E-mail é obrigatório"}), 400
 
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        # 🔍 2. Verificar se o e-mail existe
+        cursor.execute("""
+            SELECT id, nome, email, ativo
+            FROM usuarios
+            WHERE email = %s
+            LIMIT 1
+        """, (email,))
+
+        usuario = cursor.fetchone()
+        cursor.close()
+
+        #Se não existir
+        if not usuario:
+            return jsonify({"erro": "E-mail não está cadastrado"}), 404
+
+        #Se estiver inativo (opcional, mas recomendado)
+        if not usuario["ativo"]:
+            return jsonify({"erro": "Usuário está inativo"}), 403
+
+        #Aqui futuramente você pode enviar e-mail real
         return jsonify({
-            "mensagem": "Se este e-mail estiver cadastrado, as instruções de recuperação serão enviadas."
+            "mensagem": "Instruções de recuperação enviadas com sucesso."
         })
 
     except Exception as e:
