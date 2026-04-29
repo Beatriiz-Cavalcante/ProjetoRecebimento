@@ -156,7 +156,6 @@ npm run dev
 | PUT    | /usuarios/{id}/inativar           | Inativar usuário (ADM)             |
 | PUT    | /usuarios/{id}/reativar           | Reativar usuário (ADM)             |
 | POST   | /recuperar-senha                  | Solicitar recuperação de senha     |
-
 | POST   | /operacoes                        | Criar operação                     |
 | GET    | /operacoes                        | Listar operações                   |
 | PUT    | /operacoes/portaria/{id}          | Atualizar dados da portaria        |
