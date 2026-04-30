@@ -1,0 +1,128 @@
+.redefinir-senha-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #7c2d12, #431407);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.redefinir-senha-card {
+  width: 100%;
+  max-width: 440px;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 32px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+.redefinir-senha-card h1 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.redefinir-senha-subtitle {
+  margin: 8px 0 24px;
+  color: #6b7280;
+}
+
+.redefinir-senha-field {
+  margin-bottom: 16px;
+}
+
+.redefinir-senha-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.redefinir-senha-input-password {
+  position: relative;
+}
+
+.redefinir-senha-input-password input {
+  width: 100%;
+  padding: 11px 44px 11px 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.redefinir-senha-input-password input:focus {
+  outline: none;
+  border-color: #ea580c;
+  box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.15);
+}
+
+.redefinir-senha-eye {
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 17px;
+  padding: 0;
+}
+
+.redefinir-senha-button {
+  width: 100%;
+  border: none;
+  background: #ea580c;
+  color: #ffffff;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+.redefinir-senha-button:hover {
+  background: #c2410c;
+}
+
+.redefinir-senha-button:disabled,
+.redefinir-senha-eye:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.redefinir-senha-error {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.redefinir-senha-success {
+  background: #dcfce7;
+  color: #166534;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.redefinir-senha-links {
+  margin-top: 18px;
+  text-align: center;
+}
+
+.redefinir-senha-links a {
+  color: #ea580c;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.redefinir-senha-links a:hover {
+  text-decoration: underline;
+}
+

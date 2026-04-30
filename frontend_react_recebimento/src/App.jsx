@@ -4,6 +4,7 @@ import "./Appcss.css";
 import LoginPage from "./pages/Login/LoginPage";
 import CadastroUsuarioPage from "./pages/CadastroUsuario/CadastroUsuarioPage";
 import RecuperarSenhaPage from "./pages/RecuperarSenha/RecuperarSenhaPage";
+import RedefinirSenhaPage from "./pages/RedefinirSenha/RedefinirSenhaPage";
 
 import RecebimentoPage from "./pages/Recebimento/RecebimentoPage";
 import PortariaPage from "./pages/Portaria/PortariaPage";
@@ -17,6 +18,8 @@ function App() {
         <Route path="/cadastro-usuario" element={<CadastroUsuarioPage />} />
 
         <Route path="/recuperar-senha" element={<RecuperarSenhaPage />} />
+
+        <Route path="/redefinir-senha" element={<RedefinirSenhaPage />} />
 
         <Route path="/recebimento" element={<RecebimentoPage />} />
 

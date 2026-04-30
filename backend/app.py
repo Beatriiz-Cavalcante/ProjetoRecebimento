@@ -6,6 +6,17 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 import datetime
 from functools import wraps
+import os
+import secrets
+import smtplib
+from email.message import EmailMessage
+from dotenv import load_dotenv
+
+load_dotenv()
+
+EMAIL_REMETENTE = os.getenv("EMAIL_REMETENTE")
+EMAIL_SENHA_APP = os.getenv("EMAIL_SENHA_APP")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 app = Flask(__name__)
 CORS(app)
@@ -157,6 +168,35 @@ def gerar_observacao_recebimento(data):
         return "Faltando preencher: " + ", ".join(faltando)
 
     return "Recebimento preenchido corretamente."
+
+def enviar_email_recuperacao(destinatario, nome, token):
+    link = f"{FRONTEND_URL}/redefinir-senha?token={token}"
+
+    assunto = "Recuperação de senha - Sistema de Recebimento"
+
+    corpo = f"""
+            Olá, {nome}.
+
+            Recebemos uma solicitação para recuperar sua senha.
+
+            Clique no link abaixo para criar uma nova senha:
+
+            {link}
+
+            Este link expira em 30 minutos.
+
+            Se você não solicitou essa recuperação, ignore este e-mail.
+            """
+
+    msg = EmailMessage()
+    msg["Subject"] = assunto
+    msg["From"] = EMAIL_REMETENTE
+    msg["To"] = destinatario
+    msg.set_content(corpo)
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+        smtp.login(EMAIL_REMETENTE, EMAIL_SENHA_APP)
+        smtp.send_message(msg)
 
 @app.route("/")
 def home():
@@ -492,13 +532,11 @@ def recuperar_senha():
         data = request.json or {}
         email = data.get("email")
 
-        # 🔴 1. Validação obrigatória
         if not valor_preenchido(email):
             return jsonify({"erro": "E-mail é obrigatório"}), 400
 
         cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-        # 🔍 2. Verificar se o e-mail existe
         cursor.execute("""
             SELECT id, nome, email, ativo
             FROM usuarios
@@ -507,23 +545,124 @@ def recuperar_senha():
         """, (email,))
 
         usuario = cursor.fetchone()
-        cursor.close()
 
-        #Se não existir
         if not usuario:
+            cursor.close()
             return jsonify({"erro": "E-mail não está cadastrado"}), 404
 
-        #Se estiver inativo (opcional, mas recomendado)
         if not usuario["ativo"]:
+            cursor.close()
             return jsonify({"erro": "Usuário está inativo"}), 403
 
-        #Aqui futuramente você pode enviar e-mail real
+        token = secrets.token_urlsafe(48)
+        expira_em = datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+
+        cursor.execute("""
+            INSERT INTO tokens_recuperacao_senha (
+                usuario_id,
+                token,
+                usado,
+                expira_em
+            )
+            VALUES (%s, %s, FALSE, %s)
+        """, (
+            usuario["id"],
+            token,
+            expira_em
+        ))
+
+        conn.commit()
+        cursor.close()
+
+        enviar_email_recuperacao(
+            destinatario=usuario["email"],
+            nome=usuario["nome"],
+            token=token
+        )
+
         return jsonify({
             "mensagem": "Instruções de recuperação enviadas com sucesso."
         })
 
     except Exception as e:
+        conn.rollback()
         return jsonify({"erro": f"Erro ao recuperar senha: {str(e)}"}), 500
+    
+
+@app.route("/redefinir-senha", methods=["POST"])
+def redefinir_senha():
+    try:
+        data = request.json or {}
+
+        token = data.get("token")
+        nova_senha = data.get("nova_senha")
+
+        if not valor_preenchido(token):
+            return jsonify({"erro": "Token é obrigatório"}), 400
+
+        if not valor_preenchido(nova_senha):
+            return jsonify({"erro": "Nova senha é obrigatória"}), 400
+
+        if len(nova_senha) < 6:
+            return jsonify({"erro": "A senha deve ter no mínimo 6 caracteres"}), 400
+
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("""
+            SELECT
+                id,
+                usuario_id,
+                token,
+                usado,
+                expira_em
+            FROM tokens_recuperacao_senha
+            WHERE token = %s
+            LIMIT 1
+        """, (token,))
+
+        token_recuperacao = cursor.fetchone()
+
+        if not token_recuperacao:
+            cursor.close()
+            return jsonify({"erro": "Token inválido"}), 400
+
+        if token_recuperacao["usado"]:
+            cursor.close()
+            return jsonify({"erro": "Token já utilizado"}), 400
+
+        if token_recuperacao["expira_em"] < datetime.datetime.utcnow():
+            cursor.close()
+            return jsonify({"erro": "Token expirado"}), 400
+
+        nova_senha_hash = generate_password_hash(nova_senha)
+
+        cursor.execute("""
+            UPDATE usuarios
+            SET senha_hash = %s
+            WHERE id = %s
+        """, (
+            nova_senha_hash,
+            token_recuperacao["usuario_id"]
+        ))
+
+        cursor.execute("""
+            UPDATE tokens_recuperacao_senha
+            SET usado = TRUE
+            WHERE id = %s
+        """, (
+            token_recuperacao["id"],
+        ))
+
+        conn.commit()
+        cursor.close()
+
+        return jsonify({
+            "mensagem": "Senha redefinida com sucesso."
+        })
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"erro": f"Erro ao redefinir senha: {str(e)}"}), 500
 
 # =========================
 # OPERAÇÕES LOGÍSTICA

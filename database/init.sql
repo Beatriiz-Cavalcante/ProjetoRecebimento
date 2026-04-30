@@ -135,3 +135,13 @@ CREATE TABLE IF NOT EXISTS public.usuarios
 
 ALTER TABLE IF EXISTS public.usuarios
     OWNER TO postgres;
+
+CREATE TABLE IF NOT EXISTS public.tokens_recuperacao_senha
+(
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER NOT NULL REFERENCES public.usuarios(id),
+    token TEXT NOT NULL UNIQUE,
+    usado BOOLEAN DEFAULT FALSE,
+    expira_em TIMESTAMP NOT NULL,
+    criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
