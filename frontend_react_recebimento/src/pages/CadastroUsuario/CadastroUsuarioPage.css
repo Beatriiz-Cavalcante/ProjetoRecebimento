@@ -104,3 +104,21 @@
 .cadastro-usuario-links a:hover {
   text-decoration: underline;
 }
+.input-password {
+  position: relative;
+}
+
+.input-password input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+  user-select: none;
+}

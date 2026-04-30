@@ -11,10 +11,14 @@ function CadastroUsuarioPage() {
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
 
+  const [mostrarSenha, setMostrarSenha] = useState(false);
+  const [mostrarConfirmarSenha, setMostrarConfirmarSenha] = useState(false);
+
   const [erro, setErro] = useState("");
   const [mensagem, setMensagem] = useState("");
+  const [carregando, setCarregando] = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     setErro("");
@@ -50,25 +54,51 @@ function CadastroUsuarioPage() {
       return;
     }
 
-    // Temporário até criarmos a API de cadastro
-    console.log({
-      nome,
-      email,
-      perfil,
-      senha,
-    });
+    try {
+      setCarregando(true);
 
-    setMensagem("Usuário cadastrado com sucesso.");
+      const resposta = await fetch("http://127.0.0.1:5000/usuarios", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nome: nome.trim(),
+          email: email.trim(),
+          perfil,
+          senha,
+        }),
+      });
 
-    setTimeout(() => {
-      navigate("/");
-    }, 1000);
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        throw new Error(dados.erro || "Erro ao cadastrar usuário.");
+      }
+
+      setMensagem(dados.mensagem || "Usuário cadastrado com sucesso.");
+
+      setNome("");
+      setEmail("");
+      setPerfil("");
+      setSenha("");
+      setConfirmarSenha("");
+
+      setTimeout(() => {
+        navigate("/");
+      }, 1200);
+    } catch (error) {
+      setErro(error.message);
+    } finally {
+      setCarregando(false);
+    }
   }
 
   return (
     <div className="cadastro-usuario-page">
       <div className="cadastro-usuario-card">
         <h1>Cadastro de Usuário</h1>
+
         <p className="cadastro-usuario-subtitle">
           Crie um novo acesso para o sistema
         </p>
@@ -81,6 +111,7 @@ function CadastroUsuarioPage() {
               value={nome}
               placeholder="Nome completo"
               onChange={(e) => setNome(e.target.value)}
+              disabled={carregando}
             />
           </div>
 
@@ -91,12 +122,17 @@ function CadastroUsuarioPage() {
               value={email}
               placeholder="email@empresa.com"
               onChange={(e) => setEmail(e.target.value)}
+              disabled={carregando}
             />
           </div>
 
           <div className="cadastro-usuario-field">
             <label>Perfil</label>
-            <select value={perfil} onChange={(e) => setPerfil(e.target.value)}>
+            <select
+              value={perfil}
+              onChange={(e) => setPerfil(e.target.value)}
+              disabled={carregando}
+            >
               <option value="">Selecione</option>
               <option value="ADM">Administrador</option>
               <option value="RECEBIMENTO">Recebimento</option>
@@ -104,33 +140,58 @@ function CadastroUsuarioPage() {
             </select>
           </div>
 
+          {/* SENHA */}
           <div className="cadastro-usuario-field">
             <label>Senha</label>
-            <input
-              type="password"
-              value={senha}
-              placeholder="Digite a senha"
-              onChange={(e) => setSenha(e.target.value)}
-            />
+            <div className="input-password">
+              <input
+                type={mostrarSenha ? "text" : "password"}
+                value={senha}
+                placeholder="Digite a senha"
+                onChange={(e) => setSenha(e.target.value)}
+                disabled={carregando}
+              />
+               <i
+                className={`bi ${
+                  mostrarSenha ? "bi-eye-slash" : "bi-eye"
+                } toggle-password`}
+                onClick={() => setMostrarSenha(!mostrarSenha)}
+              ></i>
+            </div>
           </div>
 
+          {/* CONFIRMAR SENHA */}
           <div className="cadastro-usuario-field">
             <label>Confirmar senha</label>
-            <input
-              type="password"
-              value={confirmarSenha}
-              placeholder="Confirme a senha"
-              onChange={(e) => setConfirmarSenha(e.target.value)}
-            />
+            <div className="input-password">
+              <input
+                type={mostrarConfirmarSenha ? "text" : "password"}
+                value={confirmarSenha}
+                placeholder="Confirme a senha"
+                onChange={(e) => setConfirmarSenha(e.target.value)}
+                disabled={carregando}
+              />
+               <i
+                className={`bi ${
+                  mostrarSenha ? "bi-eye-slash" : "bi-eye"
+                } toggle-password`}
+                onClick={() => setMostrarSenha(!mostrarSenha)}
+              ></i>
+            </div>
           </div>
 
           {erro && <div className="cadastro-usuario-error">{erro}</div>}
+
           {mensagem && (
             <div className="cadastro-usuario-success">{mensagem}</div>
           )}
 
-          <button type="submit" className="cadastro-usuario-button">
-            Cadastrar
+          <button
+            type="submit"
+            className="cadastro-usuario-button"
+            disabled={carregando}
+          >
+            {carregando ? "Cadastrando..." : "Cadastrar"}
           </button>
         </form>
 
